@@ -24,15 +24,11 @@ contract TestGasPolicy is PolicyBase {
         return usedIds[wallet] > 0;
     }
 
-    function checkUserOpPolicy(bytes32 id, UserOperation calldata userOp)
-        external
-        payable
-        override
-        returns (uint256)
-    {
+    function checkUserOpPolicy(bytes32 id, UserOperation calldata userOp) external payable override returns (uint256) {
         require(status[id][msg.sender] == Status.Live);
 
-        uint256 maxAmount = (userOp.preVerificationGas + userOp.verificationGasLimit + userOp.callGasLimit) * userOp.maxFeePerGas;
+        uint256 maxAmount =
+            (userOp.preVerificationGas + userOp.verificationGasLimit + userOp.callGasLimit) * userOp.maxFeePerGas;
         if (gasPolicyConfig[id][msg.sender].enforcePaymaster) {
             if (
                 gasPolicyConfig[id][msg.sender].allowedPaymaster != address(0)

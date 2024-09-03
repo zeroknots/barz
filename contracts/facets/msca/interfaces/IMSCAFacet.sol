@@ -13,6 +13,7 @@ interface IMSCAFacet {
     error InvalidFallbackData();
     /// @dev Struct to hold optional configuration data for uninstalling a module. This should be encoded and
     /// passed to the `config` parameter of `uninstallModule`.
+
     struct UninstallModuleConfig {
         // ABI-encoding of a `ModuleManifest` to specify the original manifest
         // used to install the module now being uninstalled, in cases where the
@@ -31,39 +32,14 @@ interface IMSCAFacet {
 
     error AlwaysDenyRule();
     error ExecFromModuleNotPermitted(address module, bytes4 selector);
-    error ExecFromModuleExternalNotPermitted(
-        address module,
-        address target,
-        uint256 value,
-        bytes data
-    );
+    error ExecFromModuleExternalNotPermitted(address module, address target, uint256 value, bytes data);
     error NativeTokenSpendingNotPermitted(address module);
-    error PostExecHookReverted(
-        address module,
-        uint8 functionId,
-        bytes revertReason
-    );
-    error PreExecHookReverted(
-        address module,
-        uint8 functionId,
-        bytes revertReason
-    );
-    error PreRuntimeValidationHookFailed(
-        address module,
-        uint8 functionId,
-        bytes revertReason
-    );
+    error PostExecHookReverted(address module, uint8 functionId, bytes revertReason);
+    error PreExecHookReverted(address module, uint8 functionId, bytes revertReason);
+    error PreRuntimeValidationHookFailed(address module, uint8 functionId, bytes revertReason);
     error RuntimeValidationFunctionMissing(bytes4 selector);
-    error RuntimeValidationFunctionReverted(
-        address module,
-        uint8 functionId,
-        bytes revertReason
-    );
-    error UnexpectedAggregator(
-        address module,
-        uint8 functionId,
-        address aggregator
-    );
+    error RuntimeValidationFunctionReverted(address module, uint8 functionId, bytes revertReason);
+    error UnexpectedAggregator(address module, uint8 functionId, address aggregator);
     error UnrecognizedFunction(bytes4 selector);
     error UserOpNotFromEntryPoint();
     error UserOpValidationFunctionMissing(bytes4 selector);
@@ -72,12 +48,7 @@ interface IMSCAFacet {
     error InvalidFunctionLength();
     error InvalidCallRoute();
 
-    function initializeMSCAModules(
-        address[] calldata modules,
-        bytes calldata moduleInitData
-    ) external;
+    function initializeMSCAModules(address[] calldata modules, bytes calldata moduleInitData) external;
 
-    function mscaFallback(
-        bytes calldata fallbackData
-    ) external payable returns (bytes memory);
+    function mscaFallback(bytes calldata fallbackData) external payable returns (bytes memory);
 }

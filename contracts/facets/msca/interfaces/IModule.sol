@@ -119,11 +119,9 @@ interface IModule {
     /// @param userOp The user operation.
     /// @param userOpHash The user operation hash.
     /// @return Packed validation data for validAfter (6 bytes), validUntil (6 bytes), and authorizer (20 bytes).
-    function preUserOpValidationHook(
-        uint8 functionId,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external returns (uint256);
+    function preUserOpValidationHook(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        returns (uint256);
 
     /// @notice Run the user operation validationFunction specified by the `functionId`.
     /// @param functionId An identifier that routes the call to different internal implementations, should there be
@@ -131,11 +129,9 @@ interface IModule {
     /// @param userOp The user operation.
     /// @param userOpHash The user operation hash.
     /// @return Packed validation data for validAfter (6 bytes), validUntil (6 bytes), and authorizer (20 bytes).
-    function userOpValidationFunction(
-        uint8 functionId,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external returns (uint256);
+    function userOpValidationFunction(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        returns (uint256);
 
     /// @notice Run the pre runtime validation hook specified by the `functionId`.
     /// @dev To indicate the entire call should revert, the function MUST revert.
@@ -144,12 +140,7 @@ interface IModule {
     /// @param sender The caller address.
     /// @param value The call value.
     /// @param data The calldata sent.
-    function preRuntimeValidationHook(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external;
+    function preRuntimeValidationHook(uint8 functionId, address sender, uint256 value, bytes calldata data) external;
 
     /// @notice Run the runtime validationFunction specified by the `functionId`.
     /// @dev To indicate the entire call should revert, the function MUST revert.
@@ -158,12 +149,7 @@ interface IModule {
     /// @param sender The caller address.
     /// @param value The call value.
     /// @param data The calldata sent.
-    function runtimeValidationFunction(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external;
+    function runtimeValidationFunction(uint8 functionId, address sender, uint256 value, bytes calldata data) external;
 
     /// @notice Run the pre execution hook specified by the `functionId`.
     /// @dev To indicate the entire call should revert, the function MUST revert.
@@ -173,22 +159,16 @@ interface IModule {
     /// @param value The call value.
     /// @param data The calldata sent.
     /// @return Context to pass to a post execution hook, if present. An empty bytes array MAY be returned.
-    function preExecutionHook(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external returns (bytes memory);
+    function preExecutionHook(uint8 functionId, address sender, uint256 value, bytes calldata data)
+        external
+        returns (bytes memory);
 
     /// @notice Run the post execution hook specified by the `functionId`.
     /// @dev To indicate the entire call should revert, the function MUST revert.
     /// @param functionId An identifier that routes the call to different internal implementations, should there be
     /// more than one.
     /// @param preExecHookData The context returned by its associated pre execution hook.
-    function postExecutionHook(
-        uint8 functionId,
-        bytes calldata preExecHookData
-    ) external;
+    function postExecutionHook(uint8 functionId, bytes calldata preExecHookData) external;
 
     /// @notice Describe the contents and intended configuration of the module.
     /// @dev This manifest MUST stay constant over time.

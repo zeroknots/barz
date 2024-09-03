@@ -20,49 +20,39 @@ import {IStandardExecutor} from ".././interfaces/IStandardExecutor.sol";
 library SelectorChecker {
     function isNativeFunction(bytes4 selector) internal pure returns (bool) {
         return
-            // check against IAccount methods
-            selector == IAccount.validateUserOp.selector ||
-            // check against BaseAccount methods
-            selector == BaseAccount.entryPoint.selector ||
-            selector == BaseAccount.getNonce.selector ||
-            // check against IModuleManager methods
-            selector == IModuleManager.installModule.selector ||
-            selector == IModuleManager.uninstallModule.selector ||
-            // check against IERC165 methods
-            selector == IERC165.supportsInterface.selector ||
-            // check against IStandardExecutor methods
-            selector == IStandardExecutor.execute.selector ||
-            selector == IStandardExecutor.executeBatch.selector ||
-            // check against IModuleExecutor methods
-            selector == IModuleExecutor.executeFromModule.selector ||
-            selector == IModuleExecutor.executeFromModuleExternal.selector ||
-            // check against IAccountLoupe methods
-            selector == IAccountLoupe.getExecutionFunctionConfig.selector ||
-            selector == IAccountLoupe.getExecutionHooks.selector ||
-            selector == IAccountLoupe.getPreValidationHooks.selector ||
-            selector == IAccountLoupe.getInstalledModules.selector;
+        // check against IAccount methods
+        selector == IAccount.validateUserOp.selector
+        // check against BaseAccount methods
+        || selector == BaseAccount.entryPoint.selector || selector == BaseAccount.getNonce.selector
+        // check against IModuleManager methods
+        || selector == IModuleManager.installModule.selector || selector == IModuleManager.uninstallModule.selector
+        // check against IERC165 methods
+        || selector == IERC165.supportsInterface.selector
+        // check against IStandardExecutor methods
+        || selector == IStandardExecutor.execute.selector || selector == IStandardExecutor.executeBatch.selector
+        // check against IModuleExecutor methods
+        || selector == IModuleExecutor.executeFromModule.selector
+            || selector == IModuleExecutor.executeFromModuleExternal.selector
+        // check against IAccountLoupe methods
+        || selector == IAccountLoupe.getExecutionFunctionConfig.selector
+            || selector == IAccountLoupe.getExecutionHooks.selector
+            || selector == IAccountLoupe.getPreValidationHooks.selector
+            || selector == IAccountLoupe.getInstalledModules.selector;
     }
 
     function isErc4337Function(bytes4 selector) internal pure returns (bool) {
-        return
-            selector == IAggregator.validateSignatures.selector ||
-            selector == IAggregator.validateUserOpSignature.selector ||
-            selector == IAggregator.aggregateSignatures.selector ||
-            selector == IPaymaster.validatePaymasterUserOp.selector ||
-            selector == IPaymaster.postOp.selector;
+        return selector == IAggregator.validateSignatures.selector
+            || selector == IAggregator.validateUserOpSignature.selector
+            || selector == IAggregator.aggregateSignatures.selector
+            || selector == IPaymaster.validatePaymasterUserOp.selector || selector == IPaymaster.postOp.selector;
     }
 
     function isIModuleFunction(bytes4 selector) internal pure returns (bool) {
-        return
-            selector == IModule.onInstall.selector ||
-            selector == IModule.onUninstall.selector ||
-            selector == IModule.preUserOpValidationHook.selector ||
-            selector == IModule.userOpValidationFunction.selector ||
-            selector == IModule.preRuntimeValidationHook.selector ||
-            selector == IModule.runtimeValidationFunction.selector ||
-            selector == IModule.preExecutionHook.selector ||
-            selector == IModule.postExecutionHook.selector ||
-            selector == IModule.moduleManifest.selector ||
-            selector == IModule.moduleMetadata.selector;
+        return selector == IModule.onInstall.selector || selector == IModule.onUninstall.selector
+            || selector == IModule.preUserOpValidationHook.selector || selector == IModule.userOpValidationFunction.selector
+            || selector == IModule.preRuntimeValidationHook.selector
+            || selector == IModule.runtimeValidationFunction.selector || selector == IModule.preExecutionHook.selector
+            || selector == IModule.postExecutionHook.selector || selector == IModule.moduleManifest.selector
+            || selector == IModule.moduleMetadata.selector;
     }
 }

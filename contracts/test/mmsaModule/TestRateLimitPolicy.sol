@@ -25,12 +25,7 @@ contract TestRateLimitPolicy is PolicyBase {
         return usedIds[wallet] > 0;
     }
 
-    function checkUserOpPolicy(bytes32 id, UserOperation calldata userOp)
-        external
-        payable
-        override
-        returns (uint256)
-    {
+    function checkUserOpPolicy(bytes32 id, UserOperation calldata userOp) external payable override returns (uint256) {
         require(status[id][msg.sender] == Status.Live);
         RateLimitConfig memory config = rateLimitConfigs[id][msg.sender];
         if (config.count == 0) {

@@ -22,7 +22,6 @@ import {Constants} from "./utils/Constants.sol";
 import {AccountRecoveryFacetTestBase} from "./base/AccountRecoveryFacetTestBase.sol";
 
 contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
-
     address[] public wallets;
     address public operator;
     address public user1;
@@ -57,15 +56,33 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
     }
 
     function _addGuardianFacet() internal {
-        cutFacet(address(guardianFacet), IDiamondCut.FacetCutAction.Add, Constants.guardianFacetSelectors(), address(barz), user1PrivateKey);
+        cutFacet(
+            address(guardianFacet),
+            IDiamondCut.FacetCutAction.Add,
+            Constants.guardianFacetSelectors(),
+            address(barz),
+            user1PrivateKey
+        );
     }
 
     function _addAccountRecoveryFacet() internal {
-        cutFacet(address(accountRecoveryFacet), IDiamondCut.FacetCutAction.Add, Constants.accountRecoveryFacetSelectors(), address(barz), user1PrivateKey);
+        cutFacet(
+            address(accountRecoveryFacet),
+            IDiamondCut.FacetCutAction.Add,
+            Constants.accountRecoveryFacetSelectors(),
+            address(barz),
+            user1PrivateKey
+        );
     }
 
     function _addLockFacet() internal {
-        cutFacet(address(lockFacet), IDiamondCut.FacetCutAction.Add, Constants.lockFacetSelectors(), address(barz), user1PrivateKey);
+        cutFacet(
+            address(lockFacet),
+            IDiamondCut.FacetCutAction.Add,
+            Constants.lockFacetSelectors(),
+            address(barz),
+            user1PrivateKey
+        );
     }
 
     function _initiateRecovery() internal {
@@ -139,8 +156,9 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         guardians[1] = guardian2;
         bytes[] memory recoveryApprovalSignatures = new bytes[](2);
 
-        bytes32 recoveryPublicKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
-        
+        bytes32 recoveryPublicKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
+
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(guardian1PrivateKey, recoveryPublicKeyHash);
         recoveryApprovalSignatures[0] = abi.encodePacked(r, s, v);
         (v, r, s) = vm.sign(guardian2PrivateKey, recoveryPublicKeyHash);
@@ -170,8 +188,9 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         guardians[0] = guardian2;
         bytes[] memory recoveryApprovalSignatures = new bytes[](1);
 
-        bytes32 recoveryPublicKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
-        
+        bytes32 recoveryPublicKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
+
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(guardian2PrivateKey, recoveryPublicKeyHash);
         recoveryApprovalSignatures[0] = abi.encodePacked(r, s, v);
 
@@ -188,7 +207,9 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         AccountRecoveryFacet(address(barz)).finalizeRecovery();
 
         // checking if the owner of Barz has been updated
-        assertEq(bytesToAddress(Secp256k1VerificationFacet(address(barz)).owner()), publicKeyToAddress(recoveryPublicKey));
+        assertEq(
+            bytesToAddress(Secp256k1VerificationFacet(address(barz)).owner()), publicKeyToAddress(recoveryPublicKey)
+        );
     }
 
     function test_approveCancelRecovery() public {
@@ -226,13 +247,13 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
 
         _initiateRecovery();
 
-        bytes32 hardstopPublicKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(
-            "0",
-            "HardstopRecovery"
-        );
+        bytes32 hardstopPublicKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash("0", "HardstopRecovery");
 
-        bytes32 domainSeparator = keccak256(abi.encode(LibVerification.DOMAIN_SEPARATOR_TYPEHASH, block.chainid, address(barz)));
-        bytes32 encodedMessageHash = keccak256(abi.encode(LibVerification.BARZ_MSG_TYPEHASH, keccak256(abi.encode(hardstopPublicKeyHash))));
+        bytes32 domainSeparator =
+            keccak256(abi.encode(LibVerification.DOMAIN_SEPARATOR_TYPEHASH, block.chainid, address(barz)));
+        bytes32 encodedMessageHash =
+            keccak256(abi.encode(LibVerification.BARZ_MSG_TYPEHASH, keccak256(abi.encode(hardstopPublicKeyHash))));
         bytes32 msgHash = keccak256(abi.encodePacked("\x19\x01", domainSeparator, encodedMessageHash));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(user1PrivateKey, msgHash);
@@ -256,8 +277,9 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         guardians[1] = guardian2;
         bytes[] memory recoveryApprovalSignatures = new bytes[](2);
 
-        bytes32 recoveryPublicKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "CancelRecovery");
-        
+        bytes32 recoveryPublicKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "CancelRecovery");
+
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(guardian1PrivateKey, recoveryPublicKeyHash);
         recoveryApprovalSignatures[0] = abi.encodePacked(r, s, v);
         (v, r, s) = vm.sign(guardian2PrivateKey, recoveryPublicKeyHash);
@@ -285,19 +307,14 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
 
     function test_getApprovalRecoveryKeyHash() public {
         // sample testing with execute recovery hash
-        bytes32 actualKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
+        bytes32 actualKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
         uint256 recoveryFacetNonce = 0;
         bytes32 expectedKeyHash = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
                 keccak256(
-                    abi.encode(
-                        recoveryPublicKey,
-                        "ExecuteRecovery",
-                        address(barz),
-                        getChainId(),
-                        recoveryFacetNonce
-                    )
+                    abi.encode(recoveryPublicKey, "ExecuteRecovery", address(barz), getChainId(), recoveryFacetNonce)
                 )
             )
         );
@@ -309,7 +326,8 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         _addGuardian(guardian1);
         _addGuardian(guardian2);
 
-        bytes32 recoveryKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
+        bytes32 recoveryKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
 
         assertEq(AccountRecoveryFacet(address(barz)).getRecoveryApprovalCountWithTimeValidity(recoveryKeyHash), 0);
 
@@ -332,7 +350,8 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         _addGuardian(guardian1);
         _addGuardian(guardian2);
 
-        bytes32 recoveryKeyHash = AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
+        bytes32 recoveryKeyHash =
+            AccountRecoveryFacet(address(barz)).getApprovalRecoveryKeyHash(recoveryPublicKey, "ExecuteRecovery");
 
         assertEq(AccountRecoveryFacet(address(barz)).isRecoveryApproved(recoveryKeyHash, guardian1), false);
         assertEq(AccountRecoveryFacet(address(barz)).isRecoveryApproved(recoveryKeyHash, guardian2), false);
@@ -350,5 +369,4 @@ contract AccountRecoveryFacetTest is Test, Setup, AccountRecoveryFacetTestBase {
         assertEq(AccountRecoveryFacet(address(barz)).isRecoveryApproved(recoveryKeyHash, guardian1), false);
         assertEq(AccountRecoveryFacet(address(barz)).isRecoveryApproved(recoveryKeyHash, guardian2), false);
     }
-
 }

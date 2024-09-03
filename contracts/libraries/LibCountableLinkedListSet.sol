@@ -19,10 +19,7 @@ library LibCountableLinkedListSet {
     /// @param set The set to increment (or add) the value in.
     /// @param value The value to increment (or add).
     /// @return True if the value was incremented or added, false otherwise.
-    function tryIncrement(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal returns (bool) {
+    function tryIncrement(LinkedListSet storage set, SetValue value) internal returns (bool) {
         if (!set.contains(value)) {
             return set.tryAdd(value);
         }
@@ -44,10 +41,7 @@ library LibCountableLinkedListSet {
     /// @param set The set to decrement (or remove) the value in.
     /// @param value The value to decrement (or remove).
     /// @return True if the value was decremented or removed, false otherwise.
-    function tryDecrement(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal returns (bool) {
+    function tryDecrement(LinkedListSet storage set, SetValue value) internal returns (bool) {
         if (!set.contains(value)) {
             return false;
         }
@@ -67,10 +61,7 @@ library LibCountableLinkedListSet {
     /// portion of the flag bytes to store the counter, it's important to not use the upper 8 bits to store flags.
     /// Any existing flags on the upper 8 bits will be interpreted as part of the counter.
     /// @return The number of occurrences of the value in the set.
-    function getCount(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal view returns (uint256) {
+    function getCount(LinkedListSet storage set, SetValue value) internal view returns (uint256) {
         if (!set.contains(value)) {
             return 0;
         }

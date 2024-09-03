@@ -17,11 +17,7 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
     /**
      * @dev Returns the amount of tokens in existence.
@@ -49,10 +45,7 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(
-        address owner,
-        address spender
-    ) external view returns (uint256);
+    function allowance(address owner, address spender) external view returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -79,11 +72,7 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
 
     /**
      * @dev Atomically increases the allowance granted to `spender` by the caller.
@@ -97,10 +86,7 @@ interface IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(
-        address spender,
-        uint256 addedValue
-    ) external returns (bool);
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool);
 
     /**
      * @dev Atomically decreases the allowance granted to `spender` by the caller.
@@ -116,8 +102,5 @@ interface IERC20 {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(
-        address spender,
-        uint256 subtractedValue
-    ) external returns (bool);
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool);
 }

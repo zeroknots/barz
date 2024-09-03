@@ -44,11 +44,7 @@ interface IDiamondCut {
     /// @param init The address of the contract or facet to execute _calldata
     /// @param _calldata A function call, including function selector and arguments
     ///                  _calldata is executed with delegatecall on _init
-    function diamondCut(
-        FacetCut[] calldata diamondCut,
-        address init,
-        bytes calldata _calldata
-    ) external;
+    function diamondCut(FacetCut[] calldata diamondCut, address init, bytes calldata _calldata) external;
 
     function updateSupportsInterface(bytes4 interfaceId, bool flag) external;
 
@@ -62,22 +58,13 @@ interface IDiamondCut {
 
     function revokeDiamondCutApproval(FacetCut[] calldata diamondCut) external;
 
-    function getDiamondCutApprovalCountWithTimeValidity(
-        bytes32 diamondCutHash
-    ) external view returns (uint256);
+    function getDiamondCutApprovalCountWithTimeValidity(bytes32 diamondCutHash) external view returns (uint256);
 
-    function getOwnerCutApprovalWithTimeValidity(
-        bytes32 diamondCutHash
-    ) external view returns (bool);
+    function getOwnerCutApprovalWithTimeValidity(bytes32 diamondCutHash) external view returns (bool);
 
-    function isCutApproved(
-        bytes32 diamondCutHash,
-        address approver
-    ) external view returns (bool);
+    function isCutApproved(bytes32 diamondCutHash, address approver) external view returns (bool);
 
-    function getDiamondCutHash(
-        FacetCut[] calldata diamondCut
-    ) external view returns (bytes32);
+    function getDiamondCutHash(FacetCut[] calldata diamondCut) external view returns (bytes32);
 
     function getDiamondCutNonce() external view returns (uint128);
 }

@@ -24,11 +24,7 @@ contract TestMMSAExecutor {
     function triggerCounter(address _testCounter) external {
         IMMSAFacet(msg.sender).executeFromExecutor(
             LibEncoder.encodeSimpleSingle(),
-            abi.encodePacked(
-                _testCounter,
-                uint256(0),
-                abi.encodeWithSignature("incrementCounter()")
-            )
+            abi.encodePacked(_testCounter, uint256(0), abi.encodeWithSignature("incrementCounter()"))
         );
     }
 
@@ -39,11 +35,7 @@ contract TestMMSAExecutor {
                 msg.sender,
                 uint256(0),
                 abi.encodeWithSignature(
-                    "onERC721Received(address,address,uint256,bytes)",
-                    address(1),
-                    address(1),
-                    1,
-                    "0x00"
+                    "onERC721Received(address,address,uint256,bytes)", address(1), address(1), 1, "0x00"
                 )
             )
         );

@@ -12,11 +12,7 @@ import {LibDiamond} from "./LibDiamond.sol";
 library LibLoupe {
     /// @notice Gets all facets and their selectors.
     /// @return facets_ Facet
-    function facets()
-        internal
-        view
-        returns (IDiamondLoupe.Facet[] memory facets_)
-    {
+    function facets() internal view returns (IDiamondLoupe.Facet[] memory facets_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         facets_ = new IDiamondLoupe.Facet[](ds.selectorCount);
         uint16[] memory numFacetSelectors = new uint16[](ds.selectorCount);
@@ -25,11 +21,7 @@ library LibLoupe {
         // loop through function selectors
         for (uint256 slotIndex; selectorIndex < ds.selectorCount; slotIndex++) {
             bytes32 slot = ds.selectorSlots[slotIndex];
-            for (
-                uint256 selectorSlotIndex;
-                selectorSlotIndex < 8;
-                selectorSlotIndex++
-            ) {
+            for (uint256 selectorSlotIndex; selectorSlotIndex < 8; selectorSlotIndex++) {
                 selectorIndex++;
                 if (selectorIndex > ds.selectorCount) {
                     break;
@@ -40,9 +32,7 @@ library LibLoupe {
                 bool continueLoop;
                 for (uint256 facetIndex; facetIndex < numFacets; facetIndex++) {
                     if (facets_[facetIndex].facetAddress == facetAddress_) {
-                        facets_[facetIndex].functionSelectors[
-                            numFacetSelectors[facetIndex]
-                        ] = selector;
+                        facets_[facetIndex].functionSelectors[numFacetSelectors[facetIndex]] = selector;
                         // probably will never have more than 256 functions from one facet contract
                         require(numFacetSelectors[facetIndex] < 255);
                         numFacetSelectors[facetIndex]++;
@@ -54,9 +44,7 @@ library LibLoupe {
                     continue;
                 }
                 facets_[numFacets].facetAddress = facetAddress_;
-                facets_[numFacets].functionSelectors = new bytes4[](
-                    ds.selectorCount
-                );
+                facets_[numFacets].functionSelectors = new bytes4[](ds.selectorCount);
                 facets_[numFacets].functionSelectors[0] = selector;
                 numFacetSelectors[numFacets] = 1;
                 numFacets++;
@@ -79,9 +67,7 @@ library LibLoupe {
     /// @notice Gets all the function selectors supported by a specific facet.
     /// @param _facet The facet address.
     /// @return _facetFunctionSelectors The selectors associated with a facet address.
-    function facetFunctionSelectors(
-        address _facet
-    ) internal view returns (bytes4[] memory _facetFunctionSelectors) {
+    function facetFunctionSelectors(address _facet) internal view returns (bytes4[] memory _facetFunctionSelectors) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         uint256 numSelectors;
         _facetFunctionSelectors = new bytes4[](ds.selectorCount);
@@ -89,11 +75,7 @@ library LibLoupe {
         // loop through function selectors
         for (uint256 slotIndex; selectorIndex < ds.selectorCount; slotIndex++) {
             bytes32 slot = ds.selectorSlots[slotIndex];
-            for (
-                uint256 selectorSlotIndex;
-                selectorSlotIndex < 8;
-                selectorSlotIndex++
-            ) {
+            for (uint256 selectorSlotIndex; selectorSlotIndex < 8; selectorSlotIndex++) {
                 selectorIndex++;
                 if (selectorIndex > ds.selectorCount) {
                     break;
@@ -115,11 +97,7 @@ library LibLoupe {
 
     /// @notice Get all the facet addresses used by a diamond.
     /// @return facetAddresses_
-    function facetAddresses()
-        internal
-        view
-        returns (address[] memory facetAddresses_)
-    {
+    function facetAddresses() internal view returns (address[] memory facetAddresses_) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         facetAddresses_ = new address[](ds.selectorCount);
         uint256 numFacets;
@@ -127,11 +105,7 @@ library LibLoupe {
         // loop through function selectors
         for (uint256 slotIndex; selectorIndex < ds.selectorCount; slotIndex++) {
             bytes32 slot = ds.selectorSlots[slotIndex];
-            for (
-                uint256 selectorSlotIndex;
-                selectorSlotIndex < 8;
-                selectorSlotIndex++
-            ) {
+            for (uint256 selectorSlotIndex; selectorSlotIndex < 8; selectorSlotIndex++) {
                 selectorIndex++;
                 if (selectorIndex > ds.selectorCount) {
                     break;
@@ -163,11 +137,7 @@ library LibLoupe {
     /// @dev If facet is not found return address(0).
     /// @param _functionSelector The function selector.
     /// @return facetAddress_ The facet address.
-    function facetAddress(
-        bytes4 _functionSelector
-    ) internal view returns (address facetAddress_) {
-        facetAddress_ = address(
-            bytes20(LibDiamond.diamondStorage().facets[_functionSelector])
-        );
+    function facetAddress(bytes4 _functionSelector) internal view returns (address facetAddress_) {
+        facetAddress_ = address(bytes20(LibDiamond.diamondStorage().facets[_functionSelector]));
     }
 }

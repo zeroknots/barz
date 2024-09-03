@@ -39,10 +39,7 @@ contract ModuleManager {
         ams.validators.init();
     }
 
-    function _installValidator(
-        address _validator,
-        bytes calldata _data
-    ) internal virtual {
+    function _installValidator(address _validator, bytes calldata _data) internal virtual {
         if (_validator.code.length == 0) {
             revert ModuleManager__InvalidValidatorAddress();
         }
@@ -51,25 +48,17 @@ contract ModuleManager {
         IValidator(_validator).onInstall(_data);
     }
 
-    function _uninstallValidator(
-        address _validator,
-        bytes calldata _data
-    ) internal virtual {
-        (address prev, bytes memory disableModuleData) = abi.decode(
-            _data,
-            (address, bytes)
-        );
+    function _uninstallValidator(address _validator, bytes calldata _data) internal virtual {
+        (address prev, bytes memory disableModuleData) = abi.decode(_data, (address, bytes));
         LibMMSAStorage.mmsaStorage().validators.pop(prev, _validator);
 
-        try IValidator(_validator).onUninstall(disableModuleData) {} catch {
+        try IValidator(_validator).onUninstall(disableModuleData) {}
+        catch {
             emit UninstallCallFailed(_validator, _data);
         }
     }
 
-    function _installExecutor(
-        address _executor,
-        bytes calldata _data
-    ) internal virtual {
+    function _installExecutor(address _executor, bytes calldata _data) internal virtual {
         if (_executor.code.length == 0) {
             revert ModuleManager__InvalidExecutorAddress();
         }
@@ -78,25 +67,17 @@ contract ModuleManager {
         IModule(_executor).onInstall(_data);
     }
 
-    function _uninstallExecutor(
-        address _executor,
-        bytes calldata _data
-    ) internal virtual {
-        (address prev, bytes memory disableModuleData) = abi.decode(
-            _data,
-            (address, bytes)
-        );
+    function _uninstallExecutor(address _executor, bytes calldata _data) internal virtual {
+        (address prev, bytes memory disableModuleData) = abi.decode(_data, (address, bytes));
         LibMMSAStorage.mmsaStorage().executors.pop(prev, _executor);
 
-        try IModule(_executor).onUninstall(disableModuleData) {} catch {
+        try IModule(_executor).onUninstall(disableModuleData) {}
+        catch {
             emit UninstallCallFailed(_executor, _data);
         }
     }
 
-    function _installHook(
-        address _hook,
-        bytes calldata _data
-    ) internal virtual {
+    function _installHook(address _hook, bytes calldata _data) internal virtual {
         // TODO Implement this function. Exploring Hook options
         if (address(LibMMSAStorage.mmsaStorage().hook) == address(0)) {
             revert ModuleManager__HookAlreadyInstalled();
@@ -105,22 +86,17 @@ contract ModuleManager {
         IHook(_hook).onInstall(_data);
     }
 
-    function _uninstallHook(
-        address _hook,
-        bytes calldata _data
-    ) internal virtual {
+    function _uninstallHook(address _hook, bytes calldata _data) internal virtual {
         // TODO Implement this function. Exploring Hook options
         LibMMSAStorage.mmsaStorage().hook = IHook(address(0));
 
-        try IHook(_hook).onUninstall(_data) {} catch {
+        try IHook(_hook).onUninstall(_data) {}
+        catch {
             emit UninstallCallFailed(_hook, _data);
         }
     }
 
-    function _installFallbackHandler(
-        address _handler,
-        bytes calldata _params
-    ) internal virtual {
+    function _installFallbackHandler(address _handler, bytes calldata _params) internal virtual {
         bytes4 selector = bytes4(_params[0:4]);
 
         CallType calltype = CallType.wrap(bytes1(_params[4]));
@@ -138,41 +114,25 @@ contract ModuleManager {
             revert ModuleManager__FallbackHandlerAlreadyInstalled();
         }
 
-        LibMMSAStorage.mmsaStorage().fallbacks[selector] = FallbackHandler(
-            _handler,
-            calltype
-        );
+        LibMMSAStorage.mmsaStorage().fallbacks[selector] = FallbackHandler(_handler, calltype);
 
         IModule(_handler).onInstall(_params[4:]);
     }
 
-    function _uninstallFallbackHandler(
-        address _fallbackHandler,
-        bytes calldata _data
-    ) internal virtual {
-        LibMMSAStorage.mmsaStorage().fallbacks[
-            bytes4(_data[0:4])
-        ] = FallbackHandler(address(0), CallType.wrap(0x00));
+    function _uninstallFallbackHandler(address _fallbackHandler, bytes calldata _data) internal virtual {
+        LibMMSAStorage.mmsaStorage().fallbacks[bytes4(_data[0:4])] = FallbackHandler(address(0), CallType.wrap(0x00));
         IModule(_fallbackHandler).onUninstall(_data[4:]);
     }
 
-    function _isFallbackHandlerInstalled(
-        bytes4 _selector
-    ) internal view returns (bool) {
-        return
-            LibMMSAStorage.mmsaStorage().fallbacks[_selector].handler !=
-            address(0);
+    function _isFallbackHandlerInstalled(bytes4 _selector) internal view returns (bool) {
+        return LibMMSAStorage.mmsaStorage().fallbacks[_selector].handler != address(0);
     }
 
-    function _isValidatorInstalled(
-        address _validator
-    ) internal view virtual returns (bool) {
+    function _isValidatorInstalled(address _validator) internal view virtual returns (bool) {
         return LibMMSAStorage.mmsaStorage().validators.contains(_validator);
     }
 
-    function _isExecutorInstalled(
-        address _executor
-    ) internal view virtual returns (bool) {
+    function _isExecutorInstalled(address _executor) internal view virtual returns (bool) {
         return LibMMSAStorage.mmsaStorage().executors.contains(_executor);
     }
 
@@ -181,23 +141,19 @@ contract ModuleManager {
         return address(LibMMSAStorage.mmsaStorage().hook) == _hook;
     }
 
-    function _isModuleInstalled(
-        uint256 _moduleTypeId,
-        address _module,
-        bytes calldata _additionalContext
-    ) internal view returns (bool) {
+    function _isModuleInstalled(uint256 _moduleTypeId, address _module, bytes calldata _additionalContext)
+        internal
+        view
+        returns (bool)
+    {
         if (_moduleTypeId == VALIDATOR_MODULE_TYPE) {
             return _isValidatorInstalled(_module);
         } else if (_moduleTypeId == EXECUTOR_MODULE_TYPE) {
             return _isExecutorInstalled(_module);
         } else if (_moduleTypeId == FALLBACK_MODULE_TYPE) {
-            return
-                (_additionalContext.length < 4)
-                    ? false
-                    : (LibMMSAStorage
-                        .mmsaStorage()
-                        .fallbacks[bytes4(_additionalContext[0:4])]
-                        .handler == _module);
+            return (_additionalContext.length < 4)
+                ? false
+                : (LibMMSAStorage.mmsaStorage().fallbacks[bytes4(_additionalContext[0:4])].handler == _module);
         } else if (_moduleTypeId == HOOK_MODULE_TYPE) {
             return _isHookInstalled(_module);
         }

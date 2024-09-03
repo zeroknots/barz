@@ -22,7 +22,6 @@ import {Setup} from "./utils/Setup.sol";
 import {AccountFacetTestBase} from "./base/AccountFacetTestBase.sol";
 
 contract AccountFacetTest is Test, Setup, AccountFacetTestBase {
-
     address[] public wallets;
     // address public deployer;
     address public operator;
@@ -33,9 +32,7 @@ contract AccountFacetTest is Test, Setup, AccountFacetTestBase {
 
     TestCounter public testCounter;
 
-    bytes constant callData = abi.encodeWithSignature(
-            "incrementCounter()"
-        );
+    bytes constant callData = abi.encodeWithSignature("incrementCounter()");
 
     function setUp() public {
         uint256[] memory signers = new uint256[](2);
@@ -82,7 +79,7 @@ contract AccountFacetTest is Test, Setup, AccountFacetTestBase {
     }
 
     function test_execute() public {
-        int expectedCounter = 1;
+        int256 expectedCounter = 1;
 
         bytes memory executeCallData = encodeExecuteCall(address(testCounter), 0, callData);
 
@@ -102,7 +99,7 @@ contract AccountFacetTest is Test, Setup, AccountFacetTestBase {
     }
 
     function test_executeBatch() public {
-        int expectedCounter = 3;
+        int256 expectedCounter = 3;
 
         address[] memory _dest = new address[](3);
         uint256[] memory _value = new uint256[](3);
@@ -125,12 +122,11 @@ contract AccountFacetTest is Test, Setup, AccountFacetTestBase {
 
         for (uint256 i; i < 3; i++) {
             vm.expectEmit(true, false, false, false, address(testCounter));
-            emit CounterIncremented(int(i+1));
+            emit CounterIncremented(int256(i + 1));
         }
 
         entryPoint.handleOps(userOp, payable(barz));
 
         assertEq(testCounter.getCount(), expectedCounter);
     }
-
 }

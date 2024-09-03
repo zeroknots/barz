@@ -22,12 +22,7 @@ contract BarzFactory is IBarzFactory {
      * @param _facetRegistry Facet Registry to be used to create Barz
      * @param _defaultFallback Default Fallback Handler to be used to create Barz
      */
-    constructor(
-        address _accountFacet,
-        address _entryPoint,
-        address _facetRegistry,
-        address _defaultFallback
-    ) {
+    constructor(address _accountFacet, address _entryPoint, address _facetRegistry, address _defaultFallback) {
         accountFacet = _accountFacet;
         entryPoint = _entryPoint;
         facetRegistry = _facetRegistry;
@@ -41,23 +36,18 @@ contract BarzFactory is IBarzFactory {
      * @param _salt Salt used for deploying barz with create2
      * @return barz Instance of Barz contract deployed with the given parameters
      */
-    function createAccount(
-        address _verificationFacet,
-        bytes calldata _owner,
-        uint256 _salt
-    ) external override returns (Barz barz) {
+    function createAccount(address _verificationFacet, bytes calldata _owner, uint256 _salt)
+        external
+        override
+        returns (Barz barz)
+    {
         address addr = getAddress(_verificationFacet, _owner, _salt);
-        uint codeSize = addr.code.length;
+        uint256 codeSize = addr.code.length;
         if (codeSize > 0) {
             return Barz(payable(addr));
         }
         barz = new Barz{salt: bytes32(_salt)}(
-            accountFacet,
-            _verificationFacet,
-            entryPoint,
-            facetRegistry,
-            defaultFallback,
-            _owner
+            accountFacet, _verificationFacet, entryPoint, facetRegistry, defaultFallback, _owner
         );
         emit BarzDeployed(address(barz));
     }
@@ -69,27 +59,15 @@ contract BarzFactory is IBarzFactory {
      * @param _salt Salt used for deploying barz with create2
      * @return barzAddress Precalculated Barz address
      */
-    function getAddress(
-        address _verificationFacet,
-        bytes calldata _owner,
-        uint256 _salt
-    ) public view override returns (address barzAddress) {
-        bytes memory bytecode = getBytecode(
-            accountFacet,
-            _verificationFacet,
-            entryPoint,
-            facetRegistry,
-            defaultFallback,
-            _owner
-        );
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                bytes1(0xff),
-                address(this),
-                _salt,
-                keccak256(bytecode)
-            )
-        );
+    function getAddress(address _verificationFacet, bytes calldata _owner, uint256 _salt)
+        public
+        view
+        override
+        returns (address barzAddress)
+    {
+        bytes memory bytecode =
+            getBytecode(accountFacet, _verificationFacet, entryPoint, facetRegistry, defaultFallback, _owner);
+        bytes32 hash = keccak256(abi.encodePacked(bytes1(0xff), address(this), _salt, keccak256(bytecode)));
         barzAddress = address(uint160(uint256(hash)));
     }
 
@@ -115,12 +93,7 @@ contract BarzFactory is IBarzFactory {
         barzBytecode = abi.encodePacked(
             bytecode,
             abi.encode(
-                _accountFacet,
-                _verificationFacet,
-                _entryPoint,
-                _facetRegistry,
-                _defaultFallback,
-                _ownerPublicKey
+                _accountFacet, _verificationFacet, _entryPoint, _facetRegistry, _defaultFallback, _ownerPublicKey
             )
         );
     }
@@ -129,12 +102,7 @@ contract BarzFactory is IBarzFactory {
      * @notice Returns the creation code of the Barz contract
      * @return creationCode Creation code of Barz
      */
-    function getCreationCode()
-        public
-        pure
-        override
-        returns (bytes memory creationCode)
-    {
+    function getCreationCode() public pure override returns (bytes memory creationCode) {
         creationCode = type(Barz).creationCode;
     }
 }

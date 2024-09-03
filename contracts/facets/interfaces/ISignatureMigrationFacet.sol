@@ -33,20 +33,13 @@ interface ISignatureMigrationFacet {
         address indexed guardian
     );
     event SignatureMigrationExecuted(
-        address indexed newVerificationFacet,
-        bytes newOwner,
-        bytes4[] verificationFuncSelectors,
-        uint128 migrateAfter
+        address indexed newVerificationFacet, bytes newOwner, bytes4[] verificationFuncSelectors, uint128 migrateAfter
     );
     event SignatureMigrationCanceled(
-        address indexed newVerificationFacet,
-        bytes newOwner,
-        bytes4[] verificationFuncSelectors
+        address indexed newVerificationFacet, bytes newOwner, bytes4[] verificationFuncSelectors
     );
     event SignatureMigrationCancellationApproved(
-        address indexed newVerificationFacet,
-        bytes newOwner,
-        bytes4[] verificationFuncSelectors
+        address indexed newVerificationFacet, bytes newOwner, bytes4[] verificationFuncSelectors
     );
 
     error SignatureMigrationFacet__SignerUninitializationFailure();
@@ -117,25 +110,15 @@ interface ISignatureMigrationFacet {
         string memory saltString
     ) external view returns (bytes32);
 
-    function getMigrationOwnerApprovalWithTimeValidity(
-        bytes32 publicKeyHash
-    ) external view returns (bool);
+    function getMigrationOwnerApprovalWithTimeValidity(bytes32 publicKeyHash) external view returns (bool);
 
-    function getMigrationApprovalCountWithTimeValidity(
-        bytes32 publicKeyHash
-    ) external view returns (uint256);
+    function getMigrationApprovalCountWithTimeValidity(bytes32 publicKeyHash) external view returns (uint256);
 
-    function isMigrationApproved(
-        bytes32 migrationPublicKeyHash,
-        address approver
-    ) external view returns (bool);
+    function isMigrationApproved(bytes32 migrationPublicKeyHash, address approver) external view returns (bool);
 
     function getMigrationNonce() external view returns (uint128);
 
     function isMigrationPending() external view returns (bool);
 
-    function getPendingMigration()
-        external
-        view
-        returns (SignatureMigrationConfig memory);
+    function getPendingMigration() external view returns (SignatureMigrationConfig memory);
 }

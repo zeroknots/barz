@@ -15,10 +15,5 @@ interface IRestriction {
      * @param _calldata Optional field to include arbitrary data.
      * @return bool value for whether the check is passed
      */
-    function check(
-        address from,
-        address to,
-        uint256 value,
-        bytes calldata _calldata
-    ) external returns (bool);
+    function check(address from, address to, uint256 value, bytes calldata _calldata) external returns (bool);
 }

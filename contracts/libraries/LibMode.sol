@@ -5,17 +5,10 @@ import {ExecMode, CallType, ExecType, ExecModeSelector, ExecModePayload} from ".
 
 /// @dev LibMode is a helper library to encode/decode ModeCodes
 library LibMode {
-    function decode(
-        ExecMode mode
-    )
+    function decode(ExecMode mode)
         internal
         pure
-        returns (
-            CallType _calltype,
-            ExecType _execType,
-            ExecModeSelector _modeSelector,
-            ExecModePayload _modePayload
-        )
+        returns (CallType _calltype, ExecType _execType, ExecModeSelector _modeSelector, ExecModePayload _modePayload)
     {
         assembly {
             _calltype := mode
@@ -25,9 +18,7 @@ library LibMode {
         }
     }
 
-    function decodeBasic(
-        ExecMode mode
-    ) internal pure returns (CallType _calltype, ExecType _execType) {
+    function decodeBasic(ExecMode mode) internal pure returns (CallType _calltype, ExecType _execType) {
         assembly {
             _calltype := mode
             _execType := shl(8, mode)

@@ -11,17 +11,12 @@ import {Barz} from "../Barz.sol";
 interface IBarzFactory {
     event BarzDeployed(address);
 
-    function createAccount(
-        address verificationFacet,
-        bytes calldata owner,
-        uint256 salt
-    ) external returns (Barz);
+    function createAccount(address verificationFacet, bytes calldata owner, uint256 salt) external returns (Barz);
 
-    function getAddress(
-        address verificationFacet,
-        bytes calldata owner,
-        uint256 salt
-    ) external view returns (address);
+    function getAddress(address verificationFacet, bytes calldata owner, uint256 salt)
+        external
+        view
+        returns (address);
 
     function getBytecode(
         address accountFacet,

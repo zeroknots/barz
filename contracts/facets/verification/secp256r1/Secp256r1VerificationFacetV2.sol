@@ -18,6 +18,7 @@ import {IVerificationFacet} from "../../interfaces/IVerificationFacet.sol";
  */
 contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
     error Secp256r1VerificationFacet__InvalidSignerLength();
+
     address public constant P256_VERIFIER = address(0x100);
     address public immutable self;
 
@@ -36,9 +37,7 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @param _publicKey Bytes of owner public key
      * @return initSuccess Uint value representing the success of init operation
      */
-    function initializeSigner(
-        bytes calldata _publicKey
-    ) public override returns (uint256 initSuccess) {
+    function initializeSigner(bytes calldata _publicKey) public override returns (uint256 initSuccess) {
         LibAppStorage.enforceSignerInitialize();
 
         if (!isValidKeyType(_publicKey)) {
@@ -52,8 +51,7 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
             mstore(q, mload(add(publicKeyCoordinates, 32)))
             mstore(add(q, 32), mload(add(publicKeyCoordinates, 64)))
         }
-        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage
-            .r1Storage();
+        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage.r1Storage();
         r1Storage.q = q;
 
         bytes4 validateSelector = validateOwnerSignatureSelector();
@@ -79,15 +77,10 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @dev This method checks if the signature migration is undergoing, signer is initialized and sets the signer to zero value.
      * @return uninitSuccess Uint value representing the success of uninit operation
      */
-    function uninitializeSigner()
-        external
-        override
-        returns (uint256 uninitSuccess)
-    {
+    function uninitializeSigner() external override returns (uint256 uninitSuccess) {
         LibAppStorage.enforceSignerMigration();
         LibAppStorage.setSignerUninitialized();
-        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage
-            .r1Storage();
+        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage.r1Storage();
         r1Storage.q = [0, 0];
 
         if (LibAppStorage.getValidateOwnerSignatureSelector() == bytes4(0)) {
@@ -108,12 +101,13 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @param userOpHash Hash of UserOperation given from EntryPoint. This hash is used for signature validation
      * @return validationData Uint value representing whether the validation is successful. 0 for success, 1 for failure
      */
-    function validateOwnerSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) public view override returns (uint256 validationData) {
-        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage
-            .r1Storage();
+    function validateOwnerSignature(UserOperation calldata userOp, bytes32 userOpHash)
+        public
+        view
+        override
+        returns (uint256 validationData)
+    {
+        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage.r1Storage();
         validationData = validateSignature(userOp, userOpHash, r1Storage.q);
     }
 
@@ -125,11 +119,11 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @param q Public Key of signer who signed the contract, to be validated
      * @return isValid Uint value representing whether the validation is successful. 0 for success, 1 for failure
      */
-    function validateSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash,
-        uint256[2] memory q
-    ) public view returns (uint256 isValid) {
+    function validateSignature(UserOperation calldata userOp, bytes32 userOpHash, uint256[2] memory q)
+        public
+        view
+        returns (uint256 isValid)
+    {
         isValid = (_validateSignature(q, userOpHash, userOp.signature)) ? 0 : 1;
     }
 
@@ -137,14 +131,9 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @notice Returns the selector of function to validate the signature of UserOperation
      * @return ownerSignatureValidatorSelector Bytes4 selector of function signature to validate account owner's UserOperation signature
      */
-    function validateOwnerSignatureSelector()
-        public
-        pure
-        override
-        returns (bytes4 ownerSignatureValidatorSelector)
-    {
+    function validateOwnerSignatureSelector() public pure override returns (bytes4 ownerSignatureValidatorSelector) {
         return this.validateOwnerSignature.selector; // validateOwnerSignature(UserOperation calldata userOp,bytes32 userOpHash)
-        // The signature name could change according to the facet but the param format(UserOp, UserOpHash) should not change
+            // The signature name could change according to the facet but the param format(UserOp, UserOpHash) should not change
     }
 
     /**
@@ -152,8 +141,7 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @return signer Bytes of owner address
      */
     function owner() public view override returns (bytes memory signer) {
-        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage
-            .r1Storage();
+        Secp256r1VerificationStorage storage r1Storage = LibFacetStorage.r1Storage();
         signer = abi.encodePacked(r1Storage.q);
     }
 
@@ -163,9 +151,7 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @param _publicKey Bytes of public key for format check
      * @return isValid Boolean variable representing if the format of public key is valid
      */
-    function isValidKeyType(
-        bytes memory _publicKey
-    ) public pure override returns (bool isValid) {
+    function isValidKeyType(bytes memory _publicKey) public pure override returns (bool isValid) {
         isValid = (_publicKey.length == 65 && _publicKey[0] == 0x04);
     }
 
@@ -176,25 +162,23 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
      * @param _signature Signature that signed the above hash
      * @return magicValue Bytes4 value representing the success/failure of validation
      */
-    function isValidSignature(
-        bytes32 _hash,
-        bytes calldata _signature
-    ) public view override returns (bytes4 magicValue) {
+    function isValidSignature(bytes32 _hash, bytes calldata _signature)
+        public
+        view
+        override
+        returns (bytes4 magicValue)
+    {
         bytes32 messageData = LibVerification.getMessageHash(_hash);
-        magicValue = _validateSignature(
-            LibFacetStorage.r1Storage().q,
-            messageData,
-            _signature
-        )
+        magicValue = _validateSignature(LibFacetStorage.r1Storage().q, messageData, _signature)
             ? this.isValidSignature.selector
             : bytes4(0xffffffff);
     }
 
-    function _validateSignature(
-        uint256[2] memory q,
-        bytes32 _hash,
-        bytes calldata _signature
-    ) internal view returns (bool) {
+    function _validateSignature(uint256[2] memory q, bytes32 _hash, bytes calldata _signature)
+        internal
+        view
+        returns (bool)
+    {
         (
             uint256 rValue,
             uint256 sValue,
@@ -205,11 +189,7 @@ contract Secp256r1VerificationFacetV2 is IVerificationFacet, IERC1271 {
         bytes32 clientHash;
         {
             string memory opHashBase64 = Base64.encode(bytes.concat(_hash));
-            string memory clientDataJSON = string.concat(
-                clientDataJSONPre,
-                opHashBase64,
-                clientDataJSONPost
-            );
+            string memory clientDataJSON = string.concat(clientDataJSONPre, opHashBase64, clientDataJSONPost);
             clientHash = sha256(bytes(clientDataJSON));
         }
         bytes32 sigHash = sha256(bytes.concat(authenticatorData, clientHash));

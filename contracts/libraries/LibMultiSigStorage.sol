@@ -6,7 +6,6 @@ pragma solidity 0.8.26;
  * @dev Storage contract for storing Multi-sig Facet variables in diamond storage pattern
  * @author David Yongjun Kim (@Powerstream3604)
  */
-
 struct MultiSigStorage {
     mapping(address => address) owners;
     mapping(uint256 => mapping(address => mapping(bytes32 => uint256))) approvedHashes;
@@ -16,14 +15,9 @@ struct MultiSigStorage {
 }
 
 library LibMultiSigStorage {
-    bytes32 private constant MULTISIG_STORAGE_POSITION =
-        keccak256("v0.trustwallet.diamond.storage.MultiSigStorage");
+    bytes32 private constant MULTISIG_STORAGE_POSITION = keccak256("v0.trustwallet.diamond.storage.MultiSigStorage");
 
-    function multisigStorage()
-        internal
-        pure
-        returns (MultiSigStorage storage ds)
-    {
+    function multisigStorage() internal pure returns (MultiSigStorage storage ds) {
         bytes32 storagePosition = MULTISIG_STORAGE_POSITION;
         assembly {
             ds.slot := storagePosition

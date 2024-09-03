@@ -34,10 +34,7 @@ contract WhitelistStorage is RemoteStorage {
      * @param _wallet User wallet
      * @param _address Address to be whitelisted
      */
-    function isWhitelisted(
-        address _wallet,
-        address _address
-    ) external view returns (bool) {
+    function isWhitelisted(address _wallet, address _address) external view returns (bool) {
         return exists(_wallet, _address);
     }
 
@@ -45,9 +42,7 @@ contract WhitelistStorage is RemoteStorage {
      * @dev Returns all whitelisted addresses associated with the wallet
      * @param _wallet User wallet
      */
-    function getWhitelistedAddresses(
-        address _wallet
-    ) external view returns (address[] memory) {
+    function getWhitelistedAddresses(address _wallet) external view returns (address[] memory) {
         return getAddresses(_wallet);
     }
 }

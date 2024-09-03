@@ -4,7 +4,7 @@ pragma solidity 0.8.26;
 /**
  * @title Multi-sig facet Interface
  * @dev Interface of Multi-signature Facet with custom threshold.
-        Wallet that adds this facet becomes a multi-sig wallet
+ *         Wallet that adds this facet becomes a multi-sig wallet
  * @author David Yongjun Kim (@Powerstream3604)
  */
 interface IMultiSigFacet {
@@ -25,40 +25,23 @@ interface IMultiSigFacet {
     error MultiSigFacet__DuplicateOwner();
     error MultiSigFacet__OnlyOwner();
 
-    function checkSignatures(
-        bytes32 _dataHash,
-        bytes calldata _signatures,
-        uint256 _threshold
-    ) external view returns (uint256);
+    function checkSignatures(bytes32 _dataHash, bytes calldata _signatures, uint256 _threshold)
+        external
+        view
+        returns (uint256);
 
-    function splitSignatures(
-        bytes calldata _signatures,
-        uint256 _nextOffset
-    )
+    function splitSignatures(bytes calldata _signatures, uint256 _nextOffset)
         external
         pure
-        returns (
-            address owner,
-            bytes memory signature,
-            uint256 signatureType,
-            uint256 nextOffset
-        );
+        returns (address owner, bytes memory signature, uint256 signatureType, uint256 nextOffset);
 
     function approveHash(bytes32 hashToApprove) external;
 
     function addOwner(address newOwner, uint256 threshold) external;
 
-    function removeOwner(
-        address prevOwner,
-        address removedOwner,
-        uint256 threshold
-    ) external;
+    function removeOwner(address prevOwner, address removedOwner, uint256 threshold) external;
 
-    function swapOwner(
-        address prevOwner,
-        address oldOwner,
-        address newOwner
-    ) external;
+    function swapOwner(address prevOwner, address oldOwner, address newOwner) external;
 
     function changeThreshold(uint256 _threshold) external;
 

@@ -11,10 +11,7 @@ interface IValidator is IModule {
     /// @param userOp The user operation containing transaction details to be validated.
     /// @param userOpHash The hash of the user operation data, used for verifying the signature.
     /// @return status The result of the validation process, typically indicating success or the type of failure.
-    function validateUserOp(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external returns (uint256);
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash) external returns (uint256);
 
     /// @notice Verifies a signature against a hash, using the sender's address as a contextual check.
     /// @dev Used to confirm the validity of a signature against the specific conditions set by the sender.
@@ -22,9 +19,8 @@ interface IValidator is IModule {
     /// @param hash The hash of the data signed.
     /// @param data The signature data to validate.
     /// @return magicValue A bytes4 value that corresponds to the ERC-1271 standard, indicating the validity of the signature.
-    function isValidSignatureWithSender(
-        address sender,
-        bytes32 hash,
-        bytes calldata data
-    ) external view returns (bytes4);
+    function isValidSignatureWithSender(address sender, bytes32 hash, bytes calldata data)
+        external
+        view
+        returns (bytes4);
 }

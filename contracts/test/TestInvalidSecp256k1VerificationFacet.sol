@@ -16,6 +16,7 @@ import {UserOperation} from "../aa-4337/interfaces/UserOperation.sol";
  */
 contract TestInvalidSecp256k1VerificationFacet is BarzStorage, IERC1271 {
     using ECDSA for bytes32;
+
     error Secp256k1VerificationFacet__InvalidSignerLength();
     error VerificationFacet__ValidateOwnerSignatureSelectorNotSet();
 
@@ -31,12 +32,12 @@ contract TestInvalidSecp256k1VerificationFacet is BarzStorage, IERC1271 {
     function uninitializeSigner() external returns (uint256 uninitSuccess) {
         LibAppStorage.enforceSignerMigration();
         LibAppStorage.setSignerUninitialized();
-        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage
-            .k1Storage();
+        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage.k1Storage();
         k1Storage.signer = address(0);
 
-        if (LibAppStorage.getValidateOwnerSignatureSelector() == bytes4(0))
+        if (LibAppStorage.getValidateOwnerSignatureSelector() == bytes4(0)) {
             revert VerificationFacet__ValidateOwnerSignatureSelectorNotSet();
+        }
         LibAppStorage.setValidateOwnerSignatureSelector(bytes4(0));
 
         uninitSuccess = 1;
@@ -44,20 +45,20 @@ contract TestInvalidSecp256k1VerificationFacet is BarzStorage, IERC1271 {
         emit SignerUninitialized();
     }
 
-    function validateOwnerSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) public view returns (uint256 validationData) {
-        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage
-            .k1Storage();
+    function validateOwnerSignature(UserOperation calldata userOp, bytes32 userOpHash)
+        public
+        view
+        returns (uint256 validationData)
+    {
+        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage.k1Storage();
         return validateSignature(userOp, userOpHash, k1Storage.signer);
     }
 
-    function validateSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash,
-        address signer
-    ) public pure returns (uint256) {
+    function validateSignature(UserOperation calldata userOp, bytes32 userOpHash, address signer)
+        public
+        pure
+        returns (uint256)
+    {
         bytes32 hash = userOpHash.toEthSignedMessageHash();
         if (signer != hash.recover(userOp.signature)) return 1;
         return 0;
@@ -70,23 +71,21 @@ contract TestInvalidSecp256k1VerificationFacet is BarzStorage, IERC1271 {
     }
 
     function owner() public view returns (bytes memory) {
-        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage
-            .k1Storage();
+        Secp256k1VerificationStorage storage k1Storage = LibFacetStorage.k1Storage();
         return abi.encodePacked(k1Storage.signer);
     }
 
-    function isValidKeyType(
-        bytes memory _publicKey
-    ) public pure returns (bool) {
+    function isValidKeyType(bytes memory _publicKey) public pure returns (bool) {
         return (_publicKey.length == 65 && _publicKey[0] == 0x04);
     }
 
-    function isValidSignature(
-        bytes32 _hash,
-        bytes memory _signature
-    ) public view override returns (bytes4 magicValue) {
-        magicValue = (_hash.recover(_signature) ==
-            LibFacetStorage.k1Storage().signer)
+    function isValidSignature(bytes32 _hash, bytes memory _signature)
+        public
+        view
+        override
+        returns (bytes4 magicValue)
+    {
+        magicValue = (_hash.recover(_signature) == LibFacetStorage.k1Storage().signer)
             ? this.isValidSignature.selector
             : bytes4(0xffffffff);
     }

@@ -60,21 +60,14 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
         LibAppStorage.enforceAccountInitialize();
         s.entryPoint = IEntryPoint(_anEntryPoint);
         s.facetRegistry = IFacetRegistry(_facetRegistry);
-        LibDiamond.diamondStorage().defaultFallbackHandler = IDiamondLoupe(
-            _defaultFallBackHandler
-        );
+        LibDiamond.diamondStorage().defaultFallbackHandler = IDiamondLoupe(_defaultFallBackHandler);
 
         _cutDiamondAccountFacet(_verificationFacet);
 
-        bytes memory initCall = abi.encodeWithSignature(
-            "initializeSigner(bytes)",
-            _ownerPublicKey
-        );
+        bytes memory initCall = abi.encodeWithSignature("initializeSigner(bytes)", _ownerPublicKey);
         // Every Verification Facet should comply with initializeSigner(bytes)
         // to be compatible with the Barz contract(for initialization)
-        (bool success, bytes memory result) = _verificationFacet.delegatecall(
-            initCall
-        );
+        (bool success, bytes memory result) = _verificationFacet.delegatecall(initCall);
         if (!success || uint256(bytes32(result)) != 1) {
             revert AccountFacet__InitializationFailure();
         }
@@ -86,9 +79,7 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
     function _cutDiamondAccountFacet(address _verificationFacet) internal {
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
 
-        bytes4 ownerVerificationFuncSelector = IVerificationFacet(
-            _verificationFacet
-        ).validateOwnerSignatureSelector();
+        bytes4 ownerVerificationFuncSelector = IVerificationFacet(_verificationFacet).validateOwnerSignatureSelector();
 
         bytes4[] memory verificationFunctionSelectors = new bytes4[](3);
         verificationFunctionSelectors[0] = IERC1271.isValidSignature.selector;
@@ -111,11 +102,7 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _value Amount of native coin the owner is willing to send(e.g. ETH, BNB)
      * @param _func Bytes of calldata to execute in the destination address
      */
-    function execute(
-        address _dest,
-        uint256 _value,
-        bytes calldata _func
-    ) external override onlyWhenUnlocked {
+    function execute(address _dest, uint256 _value, bytes calldata _func) external override onlyWhenUnlocked {
         _requireFromEntryPoint();
         address restrictionsFacet = LibDiamond.restrictionsFacet();
         if (restrictionsFacet == address(0)) _call(_dest, _value, _func);
@@ -130,30 +117,26 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _value Array of amount of native coin the owner is willing to send(e.g. ETH, BNB)
      * @param _func Array of bytes of calldata to execute in the destination address
      */
-    function executeBatch(
-        address[] calldata _dest,
-        uint256[] calldata _value,
-        bytes[] calldata _func
-    ) external override onlyWhenUnlocked {
+    function executeBatch(address[] calldata _dest, uint256[] calldata _value, bytes[] calldata _func)
+        external
+        override
+        onlyWhenUnlocked
+    {
         _requireFromEntryPoint();
-        if (_dest.length != _func.length || _dest.length != _value.length)
+        if (_dest.length != _func.length || _dest.length != _value.length) {
             revert AccountFacet__InvalidArrayLength();
+        }
         address restrictionsFacet = LibDiamond.restrictionsFacet();
         if (restrictionsFacet == address(0)) {
-            for (uint256 i; i < _dest.length; ) {
+            for (uint256 i; i < _dest.length;) {
                 _call(_dest[i], _value[i], _func[i]);
                 unchecked {
                     ++i;
                 }
             }
         } else {
-            for (uint256 i; i < _dest.length; ) {
-                _callWithRestrictions(
-                    _dest[i],
-                    _value[i],
-                    _func[i],
-                    restrictionsFacet
-                );
+            for (uint256 i; i < _dest.length;) {
+                _callWithRestrictions(_dest[i], _value[i], _func[i], restrictionsFacet);
                 unchecked {
                     ++i;
                 }
@@ -168,28 +151,28 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _userOp UserOperation from owner to be validated
      * @param _userOpHash Hash of UserOperation given from the EntryPoint contract
      */
-    function _validateSignature(
-        UserOperation calldata _userOp,
-        bytes32 _userOpHash
-    ) internal override returns (uint256 validationData) {
+    function _validateSignature(UserOperation calldata _userOp, bytes32 _userOpHash)
+        internal
+        override
+        returns (uint256 validationData)
+    {
         // Get Facet with Function Selector
         address facet = LibLoupe.facetAddress(s.validateOwnerSignatureSelector);
-        if (facet == address(0))
+        if (facet == address(0)) {
             revert AccountFacet__NonExistentVerificationFacet();
+        }
 
         // Make function call to VerificationFacet
-        bytes memory validateCall = abi.encodeWithSelector(
-            s.validateOwnerSignatureSelector,
-            _userOp,
-            _userOpHash
-        );
+        bytes memory validateCall = abi.encodeWithSelector(s.validateOwnerSignatureSelector, _userOp, _userOpHash);
         (bool success, bytes memory result) = facet.delegatecall(validateCall);
         if (!success) revert AccountFacet__CallNotSuccessful();
         validationData = uint256(bytes32(result));
         if (validationData == 0) {
             LibFacetGuard.allowFacetValidation();
             emit VerificationSuccess(_userOpHash);
-        } else emit VerificationFailure(_userOpHash);
+        } else {
+            emit VerificationFailure(_userOpHash);
+        }
     }
 
     /**
@@ -199,14 +182,8 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _value Amount of Native coin the owner is wanting to make in this call
      * @param _data Calldata the owner is forwarding together in the call e.g. Swap/Token Transfer
      */
-    function _call(
-        address _target,
-        uint256 _value,
-        bytes memory _data
-    ) internal {
-        (bool success, bytes memory result) = _target.call{value: _value}(
-            _data
-        );
+    function _call(address _target, uint256 _value, bytes memory _data) internal {
+        (bool success, bytes memory result) = _target.call{value: _value}(_data);
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))
@@ -222,19 +199,15 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _data Calldata the owner is forwarding together in the call e.g. Swap/Token Transfer
      * @param _restrictionsFacet Address of Facet to validate restrictions
      */
-    function _callWithRestrictions(
-        address _target,
-        uint256 _value,
-        bytes memory _data,
-        address _restrictionsFacet
-    ) internal {
+    function _callWithRestrictions(address _target, uint256 _value, bytes memory _data, address _restrictionsFacet)
+        internal
+    {
         // NOTE: No restrictions facet, so restriction validation passes
-        if (_checkRestrictions(_restrictionsFacet, _target, _value, _data) != 0)
+        if (_checkRestrictions(_restrictionsFacet, _target, _value, _data) != 0) {
             revert AccountFacet__RestrictionsFailure();
+        }
 
-        (bool success, bytes memory result) = _target.call{value: _value}(
-            _data
-        );
+        (bool success, bytes memory result) = _target.call{value: _value}(_data);
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))
@@ -250,18 +223,12 @@ contract AccountFacet is IAccountFacet, BarzStorage, BaseAccount {
      * @param _value Amount of native coin the call is sending together with the call
      * @param _data Calldata to trigger execution in target address
      */
-    function _checkRestrictions(
-        address _facet,
-        address _target,
-        uint256 _value,
-        bytes memory _data
-    ) internal returns (uint256 result) {
+    function _checkRestrictions(address _facet, address _target, uint256 _value, bytes memory _data)
+        internal
+        returns (uint256 result)
+    {
         bytes memory call = abi.encodeWithSignature(
-            "verifyRestrictions(address,address,uint256,bytes)",
-            address(this),
-            _target,
-            _value,
-            _data
+            "verifyRestrictions(address,address,uint256,bytes)", address(this), _target, _value, _data
         );
         (bool success, bytes memory response) = _facet.delegatecall(call);
         if (!success) revert AccountFacet__RestrictionsFailure();

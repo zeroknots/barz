@@ -21,32 +21,18 @@ interface IMMSAFacet {
 
     function initMMSA() external;
 
-    function installModule(
-        uint256 moduleTypeId,
-        address module,
-        bytes calldata initData
-    ) external payable;
+    function installModule(uint256 moduleTypeId, address module, bytes calldata initData) external payable;
 
-    function uninstallModule(
-        uint256 moduleTypeId,
-        address module,
-        bytes calldata _uninitData
-    ) external;
+    function uninstallModule(uint256 moduleTypeId, address module, bytes calldata _uninitData) external;
 
-    function installValidations(
-        ValidationId[] calldata validationIds,
-        bytes[] calldata validationData
-    ) external;
+    function installValidations(ValidationId[] calldata validationIds, bytes[] calldata validationData) external;
 
-    function execute(
-        ExecMode mode,
-        bytes calldata executionCalldata
-    ) external payable;
+    function execute(ExecMode mode, bytes calldata executionCalldata) external payable;
 
-    function executeFromExecutor(
-        ExecMode mode,
-        bytes calldata executionCalldata
-    ) external payable returns (bytes[] memory returnData);
+    function executeFromExecutor(ExecMode mode, bytes calldata executionCalldata)
+        external
+        payable
+        returns (bytes[] memory returnData);
 
     function accountId() external pure returns (string memory);
 
@@ -54,28 +40,19 @@ interface IMMSAFacet {
 
     function supportsModule(uint256 moduleTypeId) external pure returns (bool);
 
-    function getModulesPaginated(
-        uint256 moduleTypeId,
-        address start,
-        uint256 pageSize
-    ) external view returns (address[] memory, address);
+    function getModulesPaginated(uint256 moduleTypeId, address start, uint256 pageSize)
+        external
+        view
+        returns (address[] memory, address);
 
-    function isModuleInstalled(
-        uint256 moduleTypeId,
-        address module,
-        bytes calldata additionalContext
-    ) external view returns (bool);
+    function isModuleInstalled(uint256 moduleTypeId, address module, bytes calldata additionalContext)
+        external
+        view
+        returns (bool);
 
-    function mmsaFallback(
-        bytes calldata fallbackData
-    ) external payable returns (bytes memory);
+    function mmsaFallback(bytes calldata fallbackData) external payable returns (bytes memory);
 
-    function mmsaStaticFallback(
-        bytes calldata fallbackData
-    ) external view returns (bytes memory);
+    function mmsaStaticFallback(bytes calldata fallbackData) external view returns (bytes memory);
 
-    function mmsaIsValidSignature(
-        bytes32 msgHash,
-        bytes calldata signature
-    ) external view returns (bytes4);
+    function mmsaIsValidSignature(bytes32 msgHash, bytes calldata signature) external view returns (bytes4);
 }

@@ -19,14 +19,8 @@ abstract contract AccountExecutor {
     /// @param value The value to send with the call.
     /// @param data The call data.
     /// @return result The return data of the call, or the error message from the call if call reverts.
-    function _exec(
-        address target,
-        uint256 value,
-        bytes memory data
-    ) internal returns (bytes memory result) {
-        if (
-            ERC165Checker.supportsInterface(target, type(IModule).interfaceId)
-        ) {
+    function _exec(address target, uint256 value, bytes memory data) internal returns (bytes memory result) {
+        if (ERC165Checker.supportsInterface(target, type(IModule).interfaceId)) {
             revert ModuleCallDenied(target);
         }
 
@@ -46,42 +40,36 @@ abstract contract AccountExecutor {
     /// - Runtime Validation
     /// - Pre Execution Hook
     /// And if it fails, reverts with the appropriate custom error.
-    function _executeRuntimeModuleFunction(
-        bytes memory buffer,
-        address module,
-        bytes4 errorSelector
-    ) internal {
+    function _executeRuntimeModuleFunction(bytes memory buffer, address module, bytes4 errorSelector) internal {
         if (!_executeRaw(module, buffer)) {
             _revertOnRuntimeModuleFunctionFail(buffer, module, errorSelector);
         }
     }
 
-    function _executeRaw(
-        address module,
-        bytes memory buffer
-    ) internal returns (bool success) {
+    function _executeRaw(address module, bytes memory buffer) internal returns (bool success) {
         assembly ("memory-safe") {
-            success := call(
-                gas(),
-                module,
-                /*value*/
-                0,
-                /*argOffset*/
-                add(buffer, 0x20), // jump over 32 bytes for length
-                /*argSize*/
-                mload(buffer),
-                /*retOffset*/
-                0,
-                /*retSize*/
-                0
-            )
+            success :=
+                call(
+                    gas(),
+                    module,
+                    /*value*/
+                    0,
+                    /*argOffset*/
+                    add(buffer, 0x20), // jump over 32 bytes for length
+                    /*argSize*/
+                    mload(buffer),
+                    /*retOffset*/
+                    0,
+                    /*retSize*/
+                    0
+                )
         }
     }
 
-    function _executeUserOpModuleFunction(
-        bytes memory buffer,
-        address module
-    ) internal returns (uint256 validationData) {
+    function _executeUserOpModuleFunction(bytes memory buffer, address module)
+        internal
+        returns (uint256 validationData)
+    {
         assembly ("memory-safe") {
             switch and(
                 gt(returndatasize(), 0x1f),
@@ -114,31 +102,20 @@ abstract contract AccountExecutor {
         }
     }
 
-    function _allocateRuntimeCallBuffer(
-        bytes calldata data
-    ) internal view returns (bytes memory buffer) {
-        buffer = abi.encodeWithSelector(
-            bytes4(0),
-            0,
-            msg.sender,
-            msg.value,
-            data
-        );
+    function _allocateRuntimeCallBuffer(bytes calldata data) internal view returns (bytes memory buffer) {
+        buffer = abi.encodeWithSelector(bytes4(0), 0, msg.sender, msg.value, data);
     }
 
-    function _allocateUserOpCallBuffer(
-        bytes4 selector,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) internal pure returns (bytes memory buffer) {
+    function _allocateUserOpCallBuffer(bytes4 selector, UserOperation calldata userOp, bytes32 userOpHash)
+        internal
+        pure
+        returns (bytes memory buffer)
+    {
         buffer = abi.encodeWithSelector(selector, 0, userOp, userOpHash);
     }
 
     /// @dev Updates which module function the buffer will call.
-    function _updateModuleCallBufferSelector(
-        bytes memory buffer,
-        bytes4 moduleSelector
-    ) internal pure {
+    function _updateModuleCallBufferSelector(bytes memory buffer, bytes4 moduleSelector) internal pure {
         assembly ("memory-safe") {
             // We only want to write to the first 4 bytes, so we first load the first word,
             // mask out the fist 4 bytes, then OR in the new selector.
@@ -153,10 +130,7 @@ abstract contract AccountExecutor {
         }
     }
 
-    function _updateModuleCallBufferFunctionId(
-        bytes memory buffer,
-        uint8 functionId
-    ) internal pure {
+    function _updateModuleCallBufferFunctionId(bytes memory buffer, uint8 functionId) internal pure {
         assembly ("memory-safe") {
             // The function ID is a uint8 type, which is left-padded.
             // We do want to mask it, however, because this is an internal function and the upper bits may not be
@@ -168,9 +142,11 @@ abstract contract AccountExecutor {
     /// @dev Re-interpret the existing call buffer as just a bytes memory hold msg.data.
     /// Since it's already there, and we don't plan on using the buffer again, we can write over the other fields
     /// to store calldata length before the data, then return a new memory pointer holding the length.
-    function _convertRuntimeCallBufferToExecBuffer(
-        bytes memory runtimeCallBuffer
-    ) internal pure returns (bytes memory execCallBuffer) {
+    function _convertRuntimeCallBufferToExecBuffer(bytes memory runtimeCallBuffer)
+        internal
+        pure
+        returns (bytes memory execCallBuffer)
+    {
         if (runtimeCallBuffer.length == 0) {
             revert EmptyRuntimeCallBuffer();
         } else {
@@ -191,19 +167,12 @@ abstract contract AccountExecutor {
     }
 
     /// @dev Used by pre exec hooks to store data for post exec hooks.
-    function _collectReturnData()
-        internal
-        pure
-        returns (bytes memory returnData)
-    {
+    function _collectReturnData() internal pure returns (bytes memory returnData) {
         assembly ("memory-safe") {
             // Allocate a buffer of that size, advancing the memory pointer to the nearest word
             returnData := mload(0x40)
             mstore(returnData, returndatasize())
-            mstore(
-                0x40,
-                and(add(add(returnData, returndatasize()), 0x3f), not(0x1f))
-            )
+            mstore(0x40, and(add(add(returnData, returndatasize()), 0x3f), not(0x1f)))
 
             // Copy over the return data
             returndatacopy(add(returnData, 0x20), 0, returndatasize())
@@ -216,11 +185,10 @@ abstract contract AccountExecutor {
     /// - PreExecHookReverted
     /// Since they all take the same parameters, we can just switch the selector as needed.
     /// The last parameter, revertReason, is copied from return data.
-    function _revertOnRuntimeModuleFunctionFail(
-        bytes memory buffer,
-        address module,
-        bytes4 errorSelector
-    ) internal pure {
+    function _revertOnRuntimeModuleFunctionFail(bytes memory buffer, address module, bytes4 errorSelector)
+        internal
+        pure
+    {
         assembly ("memory-safe") {
             // Call failed, revert with the established error format and the provided selector
             // The error format is:

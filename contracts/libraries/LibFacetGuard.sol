@@ -7,18 +7,14 @@ library LibFacetGuard {
     function enforceFacetValidation() internal view {
         bytes32 facetGuard = FACET_GUARD;
         assembly {
-            if iszero(tload(facetGuard)) {
-                revert(0, 0)
-            }
+            if iszero(tload(facetGuard)) { revert(0, 0) }
         }
     }
 
     function allowFacetValidation() internal {
         bytes32 facetGuard = FACET_GUARD;
         assembly {
-            if iszero(eq(tload(facetGuard), 0)) {
-                revert(0, 0)
-            }
+            if iszero(eq(tload(facetGuard), 0)) { revert(0, 0) }
             tstore(facetGuard, 1)
         }
     }
@@ -26,9 +22,7 @@ library LibFacetGuard {
     function closeFacetValidation() internal {
         bytes32 facetGuard = FACET_GUARD;
         assembly {
-            if iszero(eq(tload(facetGuard), 0)) {
-                tstore(facetGuard, 0)
-            }
+            if iszero(eq(tload(facetGuard), 0)) { tstore(facetGuard, 0) }
         }
     }
 }

@@ -36,11 +36,7 @@ interface ISecurityManager {
         uint128 maxMigrationPeriod
     ) external;
 
-    function initializeLockPeriod(
-        uint128 defaultLockPeriod,
-        uint128 minLockPeriod,
-        uint128 maxLockPeriod
-    ) external;
+    function initializeLockPeriod(uint128 defaultLockPeriod, uint128 minLockPeriod, uint128 maxLockPeriod) external;
 
     function initializeRecoveryPeriod(
         uint128 defaultRecoveryPeriod,
@@ -54,15 +50,9 @@ interface ISecurityManager {
         uint128 maxSecurityWindow
     ) external;
 
-    function setAdditionSecurityPeriod(
-        address wallet,
-        uint128 additionSecurityPeriod
-    ) external;
+    function setAdditionSecurityPeriod(address wallet, uint128 additionSecurityPeriod) external;
 
-    function setRemovalSecurityPeriod(
-        address wallet,
-        uint128 removalSecurityPeriod
-    ) external;
+    function setRemovalSecurityPeriod(address wallet, uint128 removalSecurityPeriod) external;
 
     function setSecurityWindow(address wallet, uint128 securityWindow) external;
 
@@ -70,23 +60,13 @@ interface ISecurityManager {
 
     function setLockPeriod(address wallet, uint128 lockPeriod) external;
 
-    function setApprovalValidationPeriod(
-        address wallet,
-        uint128 approvalValidationPeriod
-    ) external;
+    function setApprovalValidationPeriod(address wallet, uint128 approvalValidationPeriod) external;
 
-    function setMigrationPeriod(
-        address wallet,
-        uint128 migrationPeriod
-    ) external;
+    function setMigrationPeriod(address wallet, uint128 migrationPeriod) external;
 
-    function additionSecurityPeriodOf(
-        address wallet
-    ) external view returns (uint128);
+    function additionSecurityPeriodOf(address wallet) external view returns (uint128);
 
-    function removalSecurityPeriodOf(
-        address wallet
-    ) external view returns (uint128);
+    function removalSecurityPeriodOf(address wallet) external view returns (uint128);
 
     function securityWindowOf(address wallet) external view returns (uint128);
 
@@ -96,7 +76,5 @@ interface ISecurityManager {
 
     function migrationPeriodOf(address wallet) external view returns (uint128);
 
-    function approvalValidationPeriodOf(
-        address wallet
-    ) external view returns (uint128);
+    function approvalValidationPeriodOf(address wallet) external view returns (uint128);
 }

@@ -10,10 +10,7 @@ import {IEntryPoint} from "../../aa-4337/interfaces/IEntryPoint.sol";
  * @author David Yongjun Kim (@Powerstream3604)
  */
 interface IAccountFacetV2 {
-    event AccountInitialized(
-        IEntryPoint indexed entryPoint,
-        bytes indexed ownerPublicKey
-    );
+    event AccountInitialized(IEntryPoint indexed entryPoint, bytes indexed ownerPublicKey);
     // NOTE: Added Below Event
     event VerificationSuccess(bytes32);
     event VerificationFailure(bytes32);
@@ -38,17 +35,9 @@ interface IAccountFacetV2 {
         bytes calldata _ownerPublicKey
     ) external returns (uint256);
 
-    function executeSingle(
-        address dest,
-        uint256 value,
-        bytes calldata func
-    ) external;
+    function executeSingle(address dest, uint256 value, bytes calldata func) external;
 
-    function executeBatch(
-        address[] calldata dest,
-        uint256[] calldata value,
-        bytes[] calldata func
-    ) external;
+    function executeBatch(address[] calldata dest, uint256[] calldata value, bytes[] calldata func) external;
 
     function addValidatorSystem(bytes2 systemKey, address system) external;
 
@@ -56,7 +45,5 @@ interface IAccountFacetV2 {
 
     function nonce(uint192 key) external view returns (uint256);
 
-    function getValidatorSystem(
-        bytes2 _systemKey
-    ) external view returns (address);
+    function getValidatorSystem(bytes2 _systemKey) external view returns (address);
 }

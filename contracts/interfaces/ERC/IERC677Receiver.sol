@@ -2,9 +2,5 @@
 pragma solidity 0.8.26;
 
 interface IERC677Receiver {
-    function onTokenTransfer(
-        address sender,
-        uint value,
-        bytes calldata data
-    ) external pure returns (bool);
+    function onTokenTransfer(address sender, uint256 value, bytes calldata data) external pure returns (bool);
 }

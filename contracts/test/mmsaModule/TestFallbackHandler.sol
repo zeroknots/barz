@@ -17,11 +17,7 @@ contract TestFallbackHandler {
     }
 
     // Example function to manually trigger the fallback mechanism
-    function onGenericFallback(
-        address sender,
-        uint256 value,
-        bytes memory data
-    ) external returns (bytes4) {
+    function onGenericFallback(address sender, uint256 value, bytes memory data) external returns (bytes4) {
         emit GenericFallbackCalled(sender, value, data);
         return this.onGenericFallback.selector;
     }
@@ -51,13 +47,9 @@ contract TestFallbackHandler {
     }
 
     function longReturnFunction() external pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                this.onGenericFallback.selector,
-                address(1),
-                uint256(1111),
-                abi.encodePacked(hex"1234")
-            );
+        return abi.encodeWithSelector(
+            this.onGenericFallback.selector, address(1), uint256(1111), abi.encodePacked(hex"1234")
+        );
     }
 
     function getState() external view returns (uint256) {

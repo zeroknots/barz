@@ -5,17 +5,10 @@ import {IEntryPoint} from "../../../contracts/aa-4337/interfaces/IEntryPoint.sol
 import {IDiamondCut} from "../../../contracts/facets/base/interfaces/IDiamondCut.sol";
 
 contract AccountFacetTestBase {
-    event AccountInitialized(
-        IEntryPoint indexed entryPoint,
-        bytes indexed ownerPublicKey
-    );
+    event AccountInitialized(IEntryPoint indexed entryPoint, bytes indexed ownerPublicKey);
     event SignerInitialized(bytes);
 
-    event CounterIncremented(int count);
+    event CounterIncremented(int256 count);
 
-    event DiamondCut(
-        IDiamondCut.FacetCut[] _diamondCut,
-        address _init,
-        bytes _calldata
-    );
+    event DiamondCut(IDiamondCut.FacetCut[] _diamondCut, address _init, bytes _calldata);
 }

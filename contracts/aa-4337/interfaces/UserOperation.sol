@@ -37,9 +37,7 @@ struct UserOperation {
  * Utility functions helpful when working with UserOperation structs.
  */
 library UserOperationLib {
-    function getSender(
-        UserOperation calldata userOp
-    ) internal pure returns (address) {
+    function getSender(UserOperation calldata userOp) internal pure returns (address) {
         address data;
         //read sender from userOp, which is first userOp member (saves 800 gas...)
         assembly {
@@ -50,9 +48,7 @@ library UserOperationLib {
 
     //relayer/block builder might submit the TX with higher priorityFee, but the user should not
     // pay above what he signed for.
-    function gasPrice(
-        UserOperation calldata userOp
-    ) internal view returns (uint256) {
+    function gasPrice(UserOperation calldata userOp) internal view returns (uint256) {
         unchecked {
             uint256 maxFeePerGas = userOp.maxFeePerGas;
             uint256 maxPriorityFeePerGas = userOp.maxPriorityFeePerGas;
@@ -64,9 +60,7 @@ library UserOperationLib {
         }
     }
 
-    function pack(
-        UserOperation calldata userOp
-    ) internal pure returns (bytes memory ret) {
+    function pack(UserOperation calldata userOp) internal pure returns (bytes memory ret) {
         address sender = getSender(userOp);
         uint256 nonce = userOp.nonce;
         bytes32 hashInitCode = calldataKeccak(userOp.initCode);
@@ -78,24 +72,21 @@ library UserOperationLib {
         uint256 maxPriorityFeePerGas = userOp.maxPriorityFeePerGas;
         bytes32 hashPaymasterAndData = calldataKeccak(userOp.paymasterAndData);
 
-        return
-            abi.encode(
-                sender,
-                nonce,
-                hashInitCode,
-                hashCallData,
-                callGasLimit,
-                verificationGasLimit,
-                preVerificationGas,
-                maxFeePerGas,
-                maxPriorityFeePerGas,
-                hashPaymasterAndData
-            );
+        return abi.encode(
+            sender,
+            nonce,
+            hashInitCode,
+            hashCallData,
+            callGasLimit,
+            verificationGasLimit,
+            preVerificationGas,
+            maxFeePerGas,
+            maxPriorityFeePerGas,
+            hashPaymasterAndData
+        );
     }
 
-    function hash(
-        UserOperation calldata userOp
-    ) internal pure returns (bytes32) {
+    function hash(UserOperation calldata userOp) internal pure returns (bytes32) {
         return keccak256(pack(userOp));
     }
 

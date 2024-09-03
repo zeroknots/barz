@@ -6,15 +6,8 @@ type FunctionReference is bytes21;
 
 /// @title Module Manager Interface
 interface IModuleManager {
-    event ModuleInstalled(
-        address indexed module,
-        bytes32 manifestHash,
-        FunctionReference[] dependencies
-    );
-    event ModuleUninstalled(
-        address indexed module,
-        bool indexed onUninstallSucceeded
-    );
+    event ModuleInstalled(address indexed module, bytes32 manifestHash, FunctionReference[] dependencies);
+    event ModuleUninstalled(address indexed module, bool indexed onUninstallSucceeded);
 
     /// @notice Install a module to the modular account.
     /// @param module The module to install.
@@ -37,9 +30,5 @@ interface IModuleManager {
     /// guarantees.
     /// @param moduleUninstallData Optional data to be decoded and used by the module to clear module data for the
     /// modular account.
-    function uninstallModule(
-        address module,
-        bytes calldata config,
-        bytes calldata moduleUninstallData
-    ) external;
+    function uninstallModule(address module, bytes calldata config, bytes calldata moduleUninstallData) external;
 }

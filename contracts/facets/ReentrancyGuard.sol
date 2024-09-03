@@ -10,8 +10,7 @@ abstract contract ReentrancyGuard {
     error ReentrancyGuard__ReentrantCall();
 
     modifier nonReentrant() {
-        ReentrancyGuardStorage storage rgs = LibReentrancyGuardStorage
-            .reentrancyguardStorage();
+        ReentrancyGuardStorage storage rgs = LibReentrancyGuardStorage.reentrancyguardStorage();
 
         if (rgs.status == _ENTERED) {
             revert ReentrancyGuard__ReentrantCall();

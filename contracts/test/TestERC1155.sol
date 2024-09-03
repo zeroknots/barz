@@ -16,16 +16,8 @@ contract TestERC1155 is ERC1155 {
         _mint(account, tokenId, amount, "");
     }
 
-    function mintBatch(
-        address to,
-        uint256[] calldata ids,
-        uint256[] calldata amounts,
-        bytes memory data
-    ) external {
-        require(
-            ids.length == amounts.length,
-            "TestERC1155: arrays length mismatch"
-        );
+    function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts, bytes memory data) external {
+        require(ids.length == amounts.length, "TestERC1155: arrays length mismatch");
 
         _mintBatch(to, ids, amounts, data);
     }

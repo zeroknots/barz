@@ -10,10 +10,7 @@ import {IEntryPoint} from "../../aa-4337/interfaces/IEntryPoint.sol";
  * @author David Yongjun Kim (@Powerstream3604)
  */
 interface IAccountFacet {
-    event AccountInitialized(
-        IEntryPoint indexed entryPoint,
-        bytes indexed ownerPublicKey
-    );
+    event AccountInitialized(IEntryPoint indexed entryPoint, bytes indexed ownerPublicKey);
     // NOTE: Added Below Event
     event VerificationSuccess(bytes32);
     event VerificationFailure(bytes32);
@@ -34,9 +31,5 @@ interface IAccountFacet {
 
     function execute(address dest, uint256 value, bytes calldata func) external;
 
-    function executeBatch(
-        address[] calldata dest,
-        uint256[] calldata value,
-        bytes[] calldata func
-    ) external;
+    function executeBatch(address[] calldata dest, uint256[] calldata value, bytes[] calldata func) external;
 }

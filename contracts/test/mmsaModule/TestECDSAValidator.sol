@@ -33,9 +33,7 @@ contract TestECDSAValidator is IValidator, IHook {
         delete ecdsaValidatorStorage[msg.sender];
     }
 
-    function isModuleType(
-        uint256 typeID
-    ) external pure override returns (bool) {
+    function isModuleType(uint256 typeID) external pure override returns (bool) {
         return typeID == VALIDATOR_MODULE_TYPE || typeID == HOOK_MODULE_TYPE;
     }
 
@@ -47,10 +45,7 @@ contract TestECDSAValidator is IValidator, IHook {
         return ecdsaValidatorStorage[smartAccount].owner != address(0);
     }
 
-    function validateUserOp(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external override returns (uint256) {
+    function validateUserOp(UserOperation calldata userOp, bytes32 userOpHash) external override returns (uint256) {
         address owner = ecdsaValidatorStorage[msg.sender].owner;
         bytes calldata sig = userOp.signature;
         if (owner == ECDSA.recover(userOpHash, sig)) {
@@ -64,11 +59,12 @@ contract TestECDSAValidator is IValidator, IHook {
         return 0;
     }
 
-    function isValidSignatureWithSender(
-        address,
-        bytes32 hash,
-        bytes calldata sig
-    ) external view override returns (bytes4) {
+    function isValidSignatureWithSender(address, bytes32 hash, bytes calldata sig)
+        external
+        view
+        override
+        returns (bytes4)
+    {
         address owner = ecdsaValidatorStorage[msg.sender].owner;
         if (owner == ECDSA.recover(hash, sig)) {
             return ERC1271_MAGICVALUE;
@@ -81,15 +77,8 @@ contract TestECDSAValidator is IValidator, IHook {
         return ERC1271_MAGICVALUE;
     }
 
-    function preCheck(
-        address msgSender,
-        uint256,
-        bytes calldata
-    ) external override returns (bytes memory) {
-        require(
-            msgSender == ecdsaValidatorStorage[msg.sender].owner,
-            "ECDSAValidator: sender is not owner"
-        );
+    function preCheck(address msgSender, uint256, bytes calldata) external override returns (bytes memory) {
+        require(msgSender == ecdsaValidatorStorage[msg.sender].owner, "ECDSAValidator: sender is not owner");
         return hex"";
     }
 

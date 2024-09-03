@@ -48,9 +48,7 @@ contract DefaultFallbackHandler is IDiamondLoupe {
         bytes4[] memory receiverFacetSelectors = new bytes4[](5);
         receiverFacetSelectors[0] = IERC721Receiver.onERC721Received.selector;
         receiverFacetSelectors[1] = IERC1155Receiver.onERC1155Received.selector;
-        receiverFacetSelectors[2] = IERC1155Receiver
-            .onERC1155BatchReceived
-            .selector;
+        receiverFacetSelectors[2] = IERC1155Receiver.onERC1155BatchReceived.selector;
         receiverFacetSelectors[3] = IERC777Recipient.tokensReceived.selector;
         receiverFacetSelectors[4] = IERC677Receiver.onTokenTransfer.selector;
 
@@ -61,12 +59,8 @@ contract DefaultFallbackHandler is IDiamondLoupe {
         loupeFacetSelectors[3] = IDiamondLoupe.facetAddress.selector;
         loupeFacetSelectors[4] = IERC165.supportsInterface.selector;
         loupeFacetSelectors[5] = IStorageLoupe.facetsFromStorage.selector;
-        loupeFacetSelectors[6] = IStorageLoupe
-            .facetFunctionSelectorsFromStorage
-            .selector;
-        loupeFacetSelectors[7] = IStorageLoupe
-            .facetAddressesFromStorage
-            .selector;
+        loupeFacetSelectors[6] = IStorageLoupe.facetFunctionSelectorsFromStorage.selector;
+        loupeFacetSelectors[7] = IStorageLoupe.facetAddressesFromStorage.selector;
         loupeFacetSelectors[8] = IStorageLoupe.facetAddressFromStorage.selector;
 
         {
@@ -100,16 +94,13 @@ contract DefaultFallbackHandler is IDiamondLoupe {
      * @return facets_ The facet struct array including all facet information
      */
     function facets() external view override returns (Facet[] memory facets_) {
-        DefaultLibDiamond.DiamondStorage storage ds = DefaultLibDiamond
-            .diamondStorage();
+        DefaultLibDiamond.DiamondStorage storage ds = DefaultLibDiamond.diamondStorage();
         uint256 numFacets = ds.facetAddresses.length;
         facets_ = new Facet[](numFacets);
-        for (uint256 i; i < numFacets; ) {
+        for (uint256 i; i < numFacets;) {
             address facetAddress_ = ds.facetAddresses[i];
             facets_[i].facetAddress = facetAddress_;
-            facets_[i].functionSelectors = ds
-                .facetFunctionSelectors[facetAddress_]
-                .functionSelectors;
+            facets_[i].functionSelectors = ds.facetFunctionSelectors[facetAddress_].functionSelectors;
             unchecked {
                 ++i;
             }
@@ -121,39 +112,30 @@ contract DefaultFallbackHandler is IDiamondLoupe {
      * @param _facet The facet address.
      * @return facetFunctionSelectors_
      */
-    function facetFunctionSelectors(
-        address _facet
-    ) external view override returns (bytes4[] memory facetFunctionSelectors_) {
-        facetFunctionSelectors_ = DefaultLibDiamond
-            .diamondStorage()
-            .facetFunctionSelectors[_facet]
-            .functionSelectors;
+    function facetFunctionSelectors(address _facet)
+        external
+        view
+        override
+        returns (bytes4[] memory facetFunctionSelectors_)
+    {
+        facetFunctionSelectors_ = DefaultLibDiamond.diamondStorage().facetFunctionSelectors[_facet].functionSelectors;
     }
 
     /**
      * @notice Get all the facet addresses used by a diamond.
      * @return facetAddresses_
      */
-    function facetAddresses()
-        external
-        view
-        override
-        returns (address[] memory facetAddresses_)
-    {
+    function facetAddresses() external view override returns (address[] memory facetAddresses_) {
         facetAddresses_ = DefaultLibDiamond.diamondStorage().facetAddresses;
     }
 
-    /** @notice Gets the facet that supports the given selector.
+    /**
+     * @notice Gets the facet that supports the given selector.
      * @dev If facet is not found return address(0).
      * @param _functionSelector The function selector.
      * @return facetAddress_ The facet address.
      */
-    function facetAddress(
-        bytes4 _functionSelector
-    ) external view override returns (address facetAddress_) {
-        facetAddress_ = DefaultLibDiamond
-            .diamondStorage()
-            .selectorToFacetAndPosition[_functionSelector]
-            .facetAddress;
+    function facetAddress(bytes4 _functionSelector) external view override returns (address facetAddress_) {
+        facetAddress_ = DefaultLibDiamond.diamondStorage().selectorToFacetAndPosition[_functionSelector].facetAddress;
     }
 }

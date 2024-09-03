@@ -32,12 +32,7 @@ contract V2MigrationFacet is BarzStorage {
     function migrateToV2() external {
         LibDiamond.enforceIsSelf();
 
-        if (
-            !IFacetRegistry(s.facetRegistry).isFacetFunctionSelectorRegistered(
-                self,
-                0x474e4af5
-            )
-        ) {
+        if (!IFacetRegistry(s.facetRegistry).isFacetFunctionSelectorRegistered(self, 0x474e4af5)) {
             // Keccak("BarzV2Migration")
             revert V2MigrationFacet__Disallowed();
         }
@@ -48,16 +43,12 @@ contract V2MigrationFacet is BarzStorage {
 
         LibMigratorStorage.migratorStorage().version = 2;
 
-        LibDiamond
-            .diamondStorage()
-            .defaultFallbackHandler = defaultFallbackHandler;
+        LibDiamond.diamondStorage().defaultFallbackHandler = defaultFallbackHandler;
 
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory verificationFunctionSelectors = new bytes4[](3);
         verificationFunctionSelectors[0] = IERC1271.isValidSignature.selector;
-        verificationFunctionSelectors[1] = IVerificationFacet
-            .validateOwnerSignature
-            .selector;
+        verificationFunctionSelectors[1] = IVerificationFacet.validateOwnerSignature.selector;
         verificationFunctionSelectors[2] = IVerificationFacet.owner.selector;
 
         cut[0] = IDiamondCut.FacetCut({

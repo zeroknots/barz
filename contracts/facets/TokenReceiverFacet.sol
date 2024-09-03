@@ -11,22 +11,12 @@ import {IERC677Receiver} from "../interfaces/ERC/IERC677Receiver.sol";
  * @dev Contract that enables receiving ERC721/ERC1155/ERC777/ERC677 Tokens with safe transfer
  * @author David Yongjun Kim (@Powerstream3604)
  */
-contract TokenReceiverFacet is
-    IERC721Receiver,
-    IERC1155Receiver,
-    IERC777Recipient,
-    IERC677Receiver
-{
+contract TokenReceiverFacet is IERC721Receiver, IERC1155Receiver, IERC777Recipient, IERC677Receiver {
     /**
      * @notice Handles ERC721 Token callback.
      *  return Standardized onERC721Received return value.
      */
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 
@@ -34,13 +24,12 @@ contract TokenReceiverFacet is
      * @notice Handles ERC1155 Token callback.
      * return Standardized onERC1155Received return value.
      */
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC1155Received(address, address, uint256, uint256, bytes calldata)
+        external
+        pure
+        override
+        returns (bytes4)
+    {
         return IERC1155Receiver.onERC1155Received.selector;
     }
 
@@ -48,13 +37,12 @@ contract TokenReceiverFacet is
      * @notice Handles ERC1155 Token batch callback.
      * return Standardized onERC1155BatchReceived return value.
      */
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] calldata,
-        uint256[] calldata,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
+        external
+        pure
+        override
+        returns (bytes4)
+    {
         return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 
@@ -62,24 +50,17 @@ contract TokenReceiverFacet is
      * @notice Handles ERC777 Token callback.
      * Does not return value, empty implementation.
      */
-    function tokensReceived(
-        address,
-        address,
-        address,
-        uint256,
-        bytes calldata,
-        bytes calldata
-    ) external pure override {}
+    function tokensReceived(address, address, address, uint256, bytes calldata, bytes calldata)
+        external
+        pure
+        override
+    {}
 
     /**
      * @notice Handles ERC677 Token callback.
      * return true.
      */
-    function onTokenTransfer(
-        address,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bool) {
+    function onTokenTransfer(address, uint256, bytes calldata) external pure override returns (bool) {
         return true;
     }
 }

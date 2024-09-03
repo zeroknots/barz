@@ -31,7 +31,7 @@ contract TokenReceiverFacetTest is Test, Setup, TokenReceiverFacetTestBase {
 
     uint256 mockTokenId = 1;
     uint256 mockAmount = 100;
-    
+
     function setUp() public {
         uint256[] memory signers = new uint256[](2);
         signers[0] = user1PrivateKey;
@@ -57,7 +57,10 @@ contract TokenReceiverFacetTest is Test, Setup, TokenReceiverFacetTestBase {
 
     function test_onERC721Received() public {
         // 0x150b7a02 == IERC721Receiver.onERC721Received.selector
-        assertEq(IERC721Receiver(address(barz)).onERC721Received(deployer, address(operator), mockTokenId, "0x00"), bytes4(0x150b7a02));
+        assertEq(
+            IERC721Receiver(address(barz)).onERC721Received(deployer, address(operator), mockTokenId, "0x00"),
+            bytes4(0x150b7a02)
+        );
     }
 
     function test_receiveSafeERC721TokenTransfer() public {
@@ -76,7 +79,12 @@ contract TokenReceiverFacetTest is Test, Setup, TokenReceiverFacetTestBase {
 
     function test_onERC1155Received() public {
         // 0xf23a6e61 == IERC1155Receiver.onERC1155Received.selector
-        assertEq(IERC1155Receiver(address(barz)).onERC1155Received(deployer, address(operator), mockTokenId, mockAmount, "0x00"), bytes4(0xf23a6e61));
+        assertEq(
+            IERC1155Receiver(address(barz)).onERC1155Received(
+                deployer, address(operator), mockTokenId, mockAmount, "0x00"
+            ),
+            bytes4(0xf23a6e61)
+        );
     }
 
     function test_receiveSafeERC1155TokenTransfer() public {
@@ -95,7 +103,10 @@ contract TokenReceiverFacetTest is Test, Setup, TokenReceiverFacetTestBase {
         uint256[] memory amounts = new uint256[](1);
 
         // 0xbc197c81 == IERC1155Receiver.onERC1155BatchReceived.selector
-        assertEq(IERC1155Receiver(address(barz)).onERC1155BatchReceived(deployer, operator, tokenIds, amounts, "0x00"), bytes4(0xbc197c81));
+        assertEq(
+            IERC1155Receiver(address(barz)).onERC1155BatchReceived(deployer, operator, tokenIds, amounts, "0x00"),
+            bytes4(0xbc197c81)
+        );
     }
 
     function test_receiveSafeERC1155BatchTokenTransfer() public {
@@ -126,5 +137,4 @@ contract TokenReceiverFacetTest is Test, Setup, TokenReceiverFacetTestBase {
     function test_onTokenTransfer() public {
         assertEq(IERC677Receiver(address(barz)).onTokenTransfer(deployer, mockAmount, "0x00"), true);
     }
-
 }

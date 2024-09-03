@@ -14,8 +14,10 @@ import {WhitelistStorage} from "../../../contracts/infrastructure/WhitelistStora
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 // facets
 import {AccountFacet} from "../../../contracts/facets/AccountFacet.sol";
-import {Secp256k1VerificationFacet} from "../../../contracts/facets/verification/secp256k1/Secp256k1VerificationFacet.sol";
-import {Secp256r1VerificationFacet} from "../../../contracts/facets/verification/secp256r1/Secp256r1VerificationFacet.sol";
+import {Secp256k1VerificationFacet} from
+    "../../../contracts/facets/verification/secp256k1/Secp256k1VerificationFacet.sol";
+import {Secp256r1VerificationFacet} from
+    "../../../contracts/facets/verification/secp256r1/Secp256r1VerificationFacet.sol";
 import {AccountRecoveryFacet} from "../../../contracts/facets/AccountRecoveryFacet.sol";
 import {GuardianFacet} from "../../../contracts/facets/GuardianFacet.sol";
 import {TokenReceiverFacet} from "../../../contracts/facets/TokenReceiverFacet.sol";
@@ -72,16 +74,23 @@ contract Setup is Test {
         accountRecoveryFacet = _setUpAccountRecoveryFacet(address(securityManager));
         guardianFacet = _setUpGuardianFacet(address(securityManager));
         tokenReceiverFacet = _setUpTokenReceiverFacet();
-        facetRegistry = _setUpFacetRegistry(address(accountFacet), address(lockFacet), address(guardianFacet), address(k1Facet), address(r1Facet), address(restrictionsFacet), address(accountRecoveryFacet));
+        facetRegistry = _setUpFacetRegistry(
+            address(accountFacet),
+            address(lockFacet),
+            address(guardianFacet),
+            address(k1Facet),
+            address(r1Facet),
+            address(restrictionsFacet),
+            address(accountRecoveryFacet)
+        );
         diamondCutFacet = _setUpDiamondCutFacet(address(securityManager));
-        defaultFallbackHandler = _setUpDefaultFallbackHandler(address(diamondCutFacet), address(accountFacet), address(tokenReceiverFacet), address(diamondLoupeFacet));
+        defaultFallbackHandler = _setUpDefaultFallbackHandler(
+            address(diamondCutFacet), address(accountFacet), address(tokenReceiverFacet), address(diamondLoupeFacet)
+        );
         entryPoint = new EntryPoint();
 
         barzFactory = new BarzFactory(
-            address(accountFacet),
-            address(entryPoint),
-            address(facetRegistry),
-            address(defaultFallbackHandler)
+            address(accountFacet), address(entryPoint), address(facetRegistry), address(defaultFallbackHandler)
         );
     }
 
@@ -92,25 +101,16 @@ contract Setup is Test {
         address _diamondLoupeFacet
     ) internal returns (DefaultFallbackHandler defaultFallbackHandler_) {
         vm.startPrank(deployer);
-        defaultFallbackHandler_ = new DefaultFallbackHandler(
-            _diamondCutFacet,
-            _accountFacet,
-            _tokenReceiverFacet,
-            _diamondLoupeFacet
-        );
+        defaultFallbackHandler_ =
+            new DefaultFallbackHandler(_diamondCutFacet, _accountFacet, _tokenReceiverFacet, _diamondLoupeFacet);
         vm.stopPrank();
     }
 
-    function _setUpSecurityManager()
-        internal
-        returns (SecurityManager securityManager_)
-    {
+    function _setUpSecurityManager() internal returns (SecurityManager securityManager_) {
         vm.startPrank(deployer);
         securityManager_ = new SecurityManager(deployer);
         securityManager_.initializeSecurityWindow(
-            Constants.defaultSecurityWindow,
-            Constants.minSecurityWindow,
-            Constants.maxSecurityWindow
+            Constants.defaultSecurityWindow, Constants.minSecurityWindow, Constants.maxSecurityWindow
         );
         securityManager_.initializeAdditionSecurityPeriod(
             Constants.defaultAdditionSecurityPeriod,
@@ -123,19 +123,13 @@ contract Setup is Test {
             Constants.maxRemovalSecurityPeriod
         );
         securityManager_.initializeRecoveryPeriod(
-            Constants.defaultRecoveryPeriod,
-            Constants.minRecoveryPeriod,
-            Constants.maxRecoveryPeriod
+            Constants.defaultRecoveryPeriod, Constants.minRecoveryPeriod, Constants.maxRecoveryPeriod
         );
         securityManager_.initializeLockPeriod(
-            Constants.defaultLockPeriod,
-            Constants.minLockPeriod,
-            Constants.maxLockPeriod
+            Constants.defaultLockPeriod, Constants.minLockPeriod, Constants.maxLockPeriod
         );
         securityManager_.initializeMigrationPeriod(
-            Constants.defaultMigrationPeriod,
-            Constants.minMigrationPeriod,
-            Constants.maxMigrationPeriod
+            Constants.defaultMigrationPeriod, Constants.minMigrationPeriod, Constants.maxMigrationPeriod
         );
         securityManager_.initializeApprovalValidationPeriod(
             Constants.defaultApprovalValidationPeriod,
@@ -145,87 +139,64 @@ contract Setup is Test {
         vm.stopPrank();
     }
 
-    function _setUpAccountFacet()
-        internal
-        returns (AccountFacet accountFacet_)
-    {
+    function _setUpAccountFacet() internal returns (AccountFacet accountFacet_) {
         vm.startPrank(deployer);
         accountFacet_ = new AccountFacet();
         vm.stopPrank();
     }
 
-    function _setUpK1Facet()
-        internal
-        returns (Secp256k1VerificationFacet k1Facet_)
-    {
+    function _setUpK1Facet() internal returns (Secp256k1VerificationFacet k1Facet_) {
         vm.startPrank(deployer);
         k1Facet_ = new Secp256k1VerificationFacet();
         vm.stopPrank();
     }
 
-    function _setUpR1Facet()
-        internal
-        returns (Secp256r1VerificationFacet r1Facet_)
-    {
+    function _setUpR1Facet() internal returns (Secp256r1VerificationFacet r1Facet_) {
         vm.startPrank(deployer);
         r1Facet_ = new Secp256r1VerificationFacet();
         vm.stopPrank();
     }
 
-    function _setUpLockFacet(
-        address _securityManager
-    ) internal returns (LockFacet lockFacet_) {
+    function _setUpLockFacet(address _securityManager) internal returns (LockFacet lockFacet_) {
         vm.startPrank(deployer);
         lockFacet_ = new LockFacet(_securityManager);
         vm.stopPrank();
     }
 
-    function _setUpGuardianFacet(
-        address _securityManager
-    ) internal returns (GuardianFacet guardianFacet_) {
+    function _setUpGuardianFacet(address _securityManager) internal returns (GuardianFacet guardianFacet_) {
         vm.startPrank(deployer);
         guardianFacet_ = new GuardianFacet(_securityManager);
         vm.stopPrank();
     }
 
-    function _setUpAccountRecoveryFacet(
-        address _securityManager
-    ) internal returns (AccountRecoveryFacet accountRecoveryFacet_) {
+    function _setUpAccountRecoveryFacet(address _securityManager)
+        internal
+        returns (AccountRecoveryFacet accountRecoveryFacet_)
+    {
         vm.startPrank(deployer);
         accountRecoveryFacet_ = new AccountRecoveryFacet(_securityManager);
         vm.stopPrank();
     }
 
-    function _setUpDiamondCutFacet(
-        address _securityManager
-    ) internal returns (DiamondCutFacet diamondCutFacet_) {
+    function _setUpDiamondCutFacet(address _securityManager) internal returns (DiamondCutFacet diamondCutFacet_) {
         vm.startPrank(deployer);
         diamondCutFacet_ = new DiamondCutFacet(_securityManager);
         vm.stopPrank();
     }
 
-    function _setUpDiamondLoupeFacet()
-        internal
-        returns (DiamondLoupeFacet diamondLoupeFacet_)
-    {
+    function _setUpDiamondLoupeFacet() internal returns (DiamondLoupeFacet diamondLoupeFacet_) {
         vm.startPrank(deployer);
         diamondLoupeFacet_ = new DiamondLoupeFacet();
         vm.stopPrank();
     }
 
-    function _setUpRestrictionsFacet()
-        internal
-        returns (RestrictionsFacet restrictionsFacet_)
-    {
+    function _setUpRestrictionsFacet() internal returns (RestrictionsFacet restrictionsFacet_) {
         vm.startPrank(deployer);
         restrictionsFacet_ = new RestrictionsFacet();
         vm.stopPrank();
     }
 
-    function _setUpTokenReceiverFacet()
-        internal
-        returns (TokenReceiverFacet tokenReceiverFacet_)
-    {
+    function _setUpTokenReceiverFacet() internal returns (TokenReceiverFacet tokenReceiverFacet_) {
         vm.startPrank(deployer);
         tokenReceiverFacet_ = new TokenReceiverFacet();
         vm.stopPrank();
@@ -242,42 +213,20 @@ contract Setup is Test {
     ) internal returns (FacetRegistry facetRegistry_) {
         vm.startPrank(deployer);
         facetRegistry_ = new FacetRegistry(deployer);
-        facetRegistry_.registerFacetFunctionSelectors(
-            _accountFacet,
-            Constants.accountFacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _lockFacet,
-            Constants.lockFacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _guardianFacet,
-            Constants.guardianFacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _k1Facet,
-            Constants.k1FacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _r1Facet,
-            Constants.r1FacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _restrictionsFacet,
-            Constants.restrictionsFacetSelectors()
-        );
-        facetRegistry_.registerFacetFunctionSelectors(
-            _accountRecoveryFacet,
-            Constants.accountRecoveryFacetSelectors()
-        );
+        facetRegistry_.registerFacetFunctionSelectors(_accountFacet, Constants.accountFacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_lockFacet, Constants.lockFacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_guardianFacet, Constants.guardianFacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_k1Facet, Constants.k1FacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_r1Facet, Constants.r1FacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_restrictionsFacet, Constants.restrictionsFacetSelectors());
+        facetRegistry_.registerFacetFunctionSelectors(_accountRecoveryFacet, Constants.accountRecoveryFacetSelectors());
         vm.stopPrank();
     }
 
-    function _setUpSigners(
-        uint256 _count,
-        uint256[] memory _privateKeys,
-        uint256 _nativeBalance
-    ) internal returns (address[] memory signers) {
+    function _setUpSigners(uint256 _count, uint256[] memory _privateKeys, uint256 _nativeBalance)
+        internal
+        returns (address[] memory signers)
+    {
         signers = new address[](_count);
         for (uint256 i; i < _count; i++) {
             address user;
@@ -292,17 +241,13 @@ contract Setup is Test {
         }
     }
 
-    function publicKeyToAddress(
-        bytes memory _publicKey
-    ) public pure returns (address walletAddress) {
+    function publicKeyToAddress(bytes memory _publicKey) public pure returns (address walletAddress) {
         require(_publicKey.length == 65, "_publicKey length is not 65 bytes");
         bytes32 addrHash = keccak256(slice(_publicKey, 1, 64)); // Remove 0x04 prefix, then hash
         walletAddress = address(uint160(uint256(addrHash)));
     }
 
-    function bytesToAddress(
-        bytes memory _bytesAddress
-    ) public pure returns (address walletAddress) {
+    function bytesToAddress(bytes memory _bytesAddress) public pure returns (address walletAddress) {
         require(_bytesAddress.length == 20, "Invalid length for an address");
 
         uint160 addr;
@@ -312,11 +257,7 @@ contract Setup is Test {
         walletAddress = address(addr);
     }
 
-    function slice(
-        bytes memory _data,
-        uint _start,
-        uint _length
-    ) public pure returns (bytes memory part) {
+    function slice(bytes memory _data, uint256 _start, uint256 _length) public pure returns (bytes memory part) {
         part = new bytes(_length);
         for (uint256 i; i < _length; i++) {
             part[i] = _data[i + _start];
@@ -324,7 +265,8 @@ contract Setup is Test {
     }
 
     function prepareUserOp(address _barz, uint256 _nonce, bytes calldata _calldata)
-        public pure
+        public
+        pure
         returns (UserOperation memory userOp)
     {
         userOp = UserOperation({
@@ -342,9 +284,13 @@ contract Setup is Test {
         });
     }
 
-    function signUserOperation(UserOperation[] memory _userOps, uint256[] memory _privateKeys) public view returns (UserOperation[] memory userOps) {
+    function signUserOperation(UserOperation[] memory _userOps, uint256[] memory _privateKeys)
+        public
+        view
+        returns (UserOperation[] memory userOps)
+    {
         require(_userOps.length == _privateKeys.length, "Setup::signUserOperation UserOp - Key length mismatch");
-        for (uint256 i; i< _userOps.length; i++) {
+        for (uint256 i; i < _userOps.length; i++) {
             bytes32 hashedUserOp = this.hashUserOp(_userOps[i]);
             bytes32 data = keccak256(abi.encode(hashedUserOp, address(entryPoint), getChainId()));
             data = data.toEthSignedMessageHash();
@@ -367,35 +313,46 @@ contract Setup is Test {
 
     function populateAddressList(address _addr, uint256 _count) internal pure returns (address[] memory owners) {
         owners = new address[](_count);
-        for(uint256 i; i < _count; i++) {
+        for (uint256 i; i < _count; i++) {
             owners[i] = _addr;
         }
     }
 
-    function encodeExecuteCall(address _destination, uint256 _value, bytes memory _calldata) public pure returns (bytes memory callData) {
-        callData =
-            abi.encodeWithSignature("execute(address,uint256,bytes)", _destination, _value, _calldata);
+    function encodeExecuteCall(address _destination, uint256 _value, bytes memory _calldata)
+        public
+        pure
+        returns (bytes memory callData)
+    {
+        callData = abi.encodeWithSignature("execute(address,uint256,bytes)", _destination, _value, _calldata);
     }
 
-    function encodeExecuteBatchCall(address[] memory _destination, uint256[] memory _value, bytes[] memory _calldata) public pure returns (bytes memory callData) {
-        callData =
-            abi.encodeWithSignature("executeBatch(address[],uint256[],bytes[])", _destination, _value, _calldata);
+    function encodeExecuteBatchCall(address[] memory _destination, uint256[] memory _value, bytes[] memory _calldata)
+        public
+        pure
+        returns (bytes memory callData)
+    {
+        callData = abi.encodeWithSignature("executeBatch(address[],uint256[],bytes[])", _destination, _value, _calldata);
     }
 
-    function encodeDiamondCutCall(IDiamondCut.FacetCut[] memory _cut, address _init, bytes memory _initData) public pure returns (bytes memory cutData) {
-        cutData = abi.encodeWithSignature(
-            "diamondCut((address,uint8,bytes4[])[],address,bytes)", _cut, _init, _initData
-        );
+    function encodeDiamondCutCall(IDiamondCut.FacetCut[] memory _cut, address _init, bytes memory _initData)
+        public
+        pure
+        returns (bytes memory cutData)
+    {
+        cutData =
+            abi.encodeWithSignature("diamondCut((address,uint8,bytes4[])[],address,bytes)", _cut, _init, _initData);
     }
 
-    function cutFacet(address _facet, IDiamondCut.FacetCutAction _action, bytes4[] memory _selectors, address _barz, uint256 _ownerKey) public {
+    function cutFacet(
+        address _facet,
+        IDiamondCut.FacetCutAction _action,
+        bytes4[] memory _selectors,
+        address _barz,
+        uint256 _ownerKey
+    ) public {
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
 
-        cut[0] = IDiamondCut.FacetCut({
-            facetAddress: _facet,
-            action: _action,
-            functionSelectors: _selectors
-        });
+        cut[0] = IDiamondCut.FacetCut({facetAddress: _facet, action: _action, functionSelectors: _selectors});
 
         bytes memory cutData = abi.encodeWithSignature(
             "diamondCut((address,uint8,bytes4[])[],address,bytes)", cut, address(0), new bytes(0x00)
@@ -412,5 +369,4 @@ contract Setup is Test {
 
         entryPoint.handleOps(userOp, payable(_barz));
     }
-
 }

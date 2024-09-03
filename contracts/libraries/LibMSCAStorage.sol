@@ -86,23 +86,15 @@ library LibMSCAStorage {
     ///     abi.encode(uint256(keccak256("Alchemy.UpgradeableModularAccount.Storage_V1")) - 1)
     /// ) & ~bytes32(uint256(0xff));
     /// This cannot be evaluated at compile time because of its use in inline assembly.
-    bytes32 internal constant _V1_STORAGE_SLOT =
-        0xade46bbfcf6f898a43d541e42556d456ca0bf9b326df8debc0f29d3f811a0300;
+    bytes32 internal constant _V1_STORAGE_SLOT = 0xade46bbfcf6f898a43d541e42556d456ca0bf9b326df8debc0f29d3f811a0300;
 
-    function mscaStorage()
-        internal
-        pure
-        returns (MSCAStorage storage storage_)
-    {
+    function mscaStorage() internal pure returns (MSCAStorage storage storage_) {
         assembly ("memory-safe") {
             storage_.slot := _V1_STORAGE_SLOT
         }
     }
 
-    function _getPermittedCallKey(
-        address addr,
-        bytes4 selector
-    ) internal pure returns (bytes24) {
+    function _getPermittedCallKey(address addr, bytes4 selector) internal pure returns (bytes24) {
         return bytes24(bytes20(addr)) | (bytes24(selector) >> 160);
     }
 }

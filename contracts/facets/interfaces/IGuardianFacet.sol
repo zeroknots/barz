@@ -7,14 +7,8 @@ pragma solidity 0.8.26;
  * @author David Yongjun Kim (@Powerstream3604)
  */
 interface IGuardianFacet {
-    event GuardianAdditionRequested(
-        address indexed guardian,
-        uint256 executeAfter
-    );
-    event GuardianRemovalRequested(
-        address indexed guardian,
-        uint256 executeAfter
-    );
+    event GuardianAdditionRequested(address indexed guardian, uint256 executeAfter);
+    event GuardianRemovalRequested(address indexed guardian, uint256 executeAfter);
     event GuardianAdditionCancelled(address indexed guardian);
     event GuardianRemovalCancelled(address indexed guardian);
     event GuardianAdded(address indexed guardian);

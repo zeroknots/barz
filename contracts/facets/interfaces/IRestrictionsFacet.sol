@@ -18,9 +18,7 @@ interface IRestrictionsFacet {
     error RestrictionsFacet__ZeroAddressRestrictionsFacet();
     error RestrictionsFacet__RemainingRestrictionsCantBeEmpty();
 
-    function initializeRestrictions(
-        address[] memory _restrictions
-    ) external returns (uint256);
+    function initializeRestrictions(address[] memory _restrictions) external returns (uint256);
 
     function uninitializeRestrictions() external returns (uint256);
 
@@ -30,10 +28,7 @@ interface IRestrictionsFacet {
 
     function removeRestriction(address restriction) external;
 
-    function verifyRestrictions(
-        address from,
-        address to,
-        uint256 value,
-        bytes calldata _calldata
-    ) external returns (uint256);
+    function verifyRestrictions(address from, address to, uint256 value, bytes calldata _calldata)
+        external
+        returns (uint256);
 }

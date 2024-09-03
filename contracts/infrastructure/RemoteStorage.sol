@@ -33,8 +33,7 @@ abstract contract RemoteStorage {
     error RemoteStorage__NotFound();
     error RemoteStorage__CallerNotGuardian();
 
-    bytes4 constant IS_GUARDIAN_SELECTOR =
-        bytes4(keccak256("isGuardian(address)"));
+    bytes4 constant IS_GUARDIAN_SELECTOR = bytes4(keccak256("isGuardian(address)"));
     bytes4 constant GUARDIAN_COUNT = bytes4(keccak256("guardianCount()"));
 
     /**
@@ -51,11 +50,10 @@ abstract contract RemoteStorage {
      */
     function enforceGuardianOrWallet(address _wallet) internal view {
         if (msg.sender == _wallet) return;
-        address facetAddress = IDiamondLoupe(_wallet).facetAddress(
-            IS_GUARDIAN_SELECTOR
-        );
-        if (facetAddress != address(0))
+        address facetAddress = IDiamondLoupe(_wallet).facetAddress(IS_GUARDIAN_SELECTOR);
+        if (facetAddress != address(0)) {
             if (IGuardianFacet(_wallet).isGuardian(msg.sender)) return;
+        }
         revert RemoteStorage__CallerNotGuardianOrOwner();
     }
 
@@ -72,11 +70,10 @@ abstract contract RemoteStorage {
             if (guardianCount != 0) revert RemoteStorage__CallerNotGuardian();
             return;
         }
-        facetAddress = IDiamondLoupe(_wallet).facetAddress(
-            IS_GUARDIAN_SELECTOR
-        );
-        if (facetAddress != address(0))
+        facetAddress = IDiamondLoupe(_wallet).facetAddress(IS_GUARDIAN_SELECTOR);
+        if (facetAddress != address(0)) {
             if (IGuardianFacet(_wallet).isGuardian(msg.sender)) return;
+        }
 
         revert RemoteStorage__CallerNotGuardianOrOwner();
     }
@@ -125,13 +122,11 @@ abstract contract RemoteStorage {
      * @param _wallet Address of wallet to fetch the addresses added to it
      * @return addresses List of addresses added to the wallet
      */
-    function getAddresses(
-        address _wallet
-    ) internal view returns (address[] memory addresses) {
+    function getAddresses(address _wallet) internal view returns (address[] memory addresses) {
         StorageConfig storage config = configs[_wallet];
         addresses = new address[](config.addresses.length);
-        uint addressesLen = config.addresses.length;
-        for (uint256 i; i < addressesLen; ) {
+        uint256 addressesLen = config.addresses.length;
+        for (uint256 i; i < addressesLen;) {
             addresses[i] = config.addresses[i];
             unchecked {
                 ++i;
@@ -145,10 +140,7 @@ abstract contract RemoteStorage {
      * @param _address Address to fetch if the address if added to given wallet
      * @return exists_ Bool value showing if the address exists in wallet
      */
-    function exists(
-        address _wallet,
-        address _address
-    ) internal view returns (bool exists_) {
+    function exists(address _wallet, address _address) internal view returns (bool exists_) {
         exists_ = configs[_wallet].info[_address].exists;
     }
 

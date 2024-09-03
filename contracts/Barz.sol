@@ -39,9 +39,7 @@ contract Barz is IBarz {
             _defaultFallBack,
             _ownerPublicKey
         );
-        (bool success, bytes memory result) = _accountFacet.delegatecall(
-            initCall
-        );
+        (bool success, bytes memory result) = _accountFacet.delegatecall(initCall);
         if (!success || uint256(bytes32(result)) != 1) {
             revert Barz__InitializationFailure();
         }
@@ -60,8 +58,9 @@ contract Barz is IBarz {
         }
         // get facet from function selector
         address facet = address(bytes20(ds.facets[msg.sig]));
-        if (facet == address(0))
+        if (facet == address(0)) {
             facet = ds.defaultFallbackHandler.facetAddress(msg.sig);
+        }
         require(facet != address(0), "Barz: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {
@@ -73,12 +72,8 @@ contract Barz is IBarz {
             returndatacopy(0, 0, returndatasize())
             // return any return value or error back to the caller
             switch result
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 

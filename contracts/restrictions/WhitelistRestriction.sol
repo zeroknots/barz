@@ -24,10 +24,7 @@ contract WhitelistRestriction is IRestriction {
      * @param _to The target contract.
      * @param _data The data payload.
      */
-    function recoverSpender(
-        address _to,
-        bytes memory _data
-    ) public pure returns (address spender) {
+    function recoverSpender(address _to, bytes memory _data) public pure returns (address spender) {
         return LibRecoverSpender._recover(_to, _data);
     }
 
@@ -38,18 +35,13 @@ contract WhitelistRestriction is IRestriction {
      * @param _calldata Optional field to include arbitrary data.
      * @return result value for whether the check is passed
      */
-    function check(
-        address _from,
-        address _to,
-        uint256 /*_value*/,
-        bytes calldata _calldata
-    ) external view override returns (bool result) {
-        return
-            whitelistStorage.isWhitelisted(
-                _from,
-                LibRecoverSpender._recover(_to, _calldata)
-            ) ||
-            _to == address(whitelistStorage) ||
-            _to == msg.sender;
+    function check(address _from, address _to, uint256, /*_value*/ bytes calldata _calldata)
+        external
+        view
+        override
+        returns (bool result)
+    {
+        return whitelistStorage.isWhitelisted(_from, LibRecoverSpender._recover(_to, _calldata))
+            || _to == address(whitelistStorage) || _to == msg.sender;
     }
 }

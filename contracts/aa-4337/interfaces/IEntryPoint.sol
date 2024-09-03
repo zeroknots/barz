@@ -1,7 +1,8 @@
 /**
- ** Account-Abstraction (EIP-4337) singleton EntryPoint implementation.
- ** Only one instance required on each chain.
- **/
+ * Account-Abstraction (EIP-4337) singleton EntryPoint implementation.
+ * Only one instance required on each chain.
+ *
+ */
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.12;
 
@@ -15,7 +16,8 @@ import "./IAggregator.sol";
 import "./INonceManager.sol";
 
 interface IEntryPoint is IStakeManager, INonceManager {
-    /***
+    /**
+     *
      * An event emitted after each successful request
      * @param userOpHash - unique identifier for the request (hash its entire content, except signature).
      * @param sender - the account that generates this request.
@@ -42,12 +44,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * @param factory the factory used to deploy this account (in the initCode)
      * @param paymaster the paymaster used by this UserOp
      */
-    event AccountDeployed(
-        bytes32 indexed userOpHash,
-        address indexed sender,
-        address factory,
-        address paymaster
-    );
+    event AccountDeployed(bytes32 indexed userOpHash, address indexed sender, address factory, address paymaster);
 
     /**
      * An event emitted if the UserOperation "callData" reverted with non-zero length
@@ -57,10 +54,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * @param revertReason - the return bytes from the (reverted) call to "callData".
      */
     event UserOperationRevertReason(
-        bytes32 indexed userOpHash,
-        address indexed sender,
-        uint256 nonce,
-        bytes revertReason
+        bytes32 indexed userOpHash, address indexed sender, uint256 nonce, bytes revertReason
     );
 
     /**
@@ -98,12 +92,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * @param factoryInfo stake information about the factory (if any)
      * @param paymasterInfo stake information about the paymaster (if any)
      */
-    error ValidationResult(
-        ReturnInfo returnInfo,
-        StakeInfo senderInfo,
-        StakeInfo factoryInfo,
-        StakeInfo paymasterInfo
-    );
+    error ValidationResult(ReturnInfo returnInfo, StakeInfo senderInfo, StakeInfo factoryInfo, StakeInfo paymasterInfo);
 
     /**
      * Successful result from simulateValidation, if the account returns a signature aggregator
@@ -131,12 +120,7 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * return value of simulateHandleOp
      */
     error ExecutionResult(
-        uint256 preOpGas,
-        uint256 paid,
-        uint48 validAfter,
-        uint48 validUntil,
-        bool targetSuccess,
-        bytes targetResult
+        uint256 preOpGas, uint256 paid, uint48 validAfter, uint48 validUntil, bool targetSuccess, bytes targetResult
     );
 
     //UserOps handled, per aggregator
@@ -156,28 +140,21 @@ interface IEntryPoint is IStakeManager, INonceManager {
      * @param ops the operations to execute
      * @param beneficiary the address to receive the fees
      */
-    function handleOps(
-        UserOperation[] calldata ops,
-        address payable beneficiary
-    ) external;
+    function handleOps(UserOperation[] calldata ops, address payable beneficiary) external;
 
     /**
      * Execute a batch of UserOperation with Aggregators
      * @param opsPerAggregator the operations to execute, grouped by aggregator (or address(0) for no-aggregator accounts)
      * @param beneficiary the address to receive the fees
      */
-    function handleAggregatedOps(
-        UserOpsPerAggregator[] calldata opsPerAggregator,
-        address payable beneficiary
-    ) external;
+    function handleAggregatedOps(UserOpsPerAggregator[] calldata opsPerAggregator, address payable beneficiary)
+        external;
 
     /**
      * generate a request Id - unique identifier for this request.
      * the request ID is a hash over the content of the userOp (except the signature), the entrypoint and the chainid.
      */
-    function getUserOpHash(
-        UserOperation calldata userOp
-    ) external view returns (bytes32);
+    function getUserOpHash(UserOperation calldata userOp) external view returns (bytes32);
 
     /**
      * Simulate a call to account.validateUserOp and paymaster.validatePaymasterUserOp.
@@ -235,9 +212,5 @@ interface IEntryPoint is IStakeManager, INonceManager {
      *        are set to the return from that call.
      * @param targetCallData callData to pass to target address
      */
-    function simulateHandleOp(
-        UserOperation calldata op,
-        address target,
-        bytes calldata targetCallData
-    ) external;
+    function simulateHandleOp(UserOperation calldata op, address target, bytes calldata targetCallData) external;
 }

@@ -49,20 +49,11 @@ contract LockFacet is ILockFacet, Modifiers {
      * @param _approver Address of approver approving the unlock of Barz account
      * @param _signature Signature of the approver that signed the msg hash for unlocking the account
      */
-    function unlock(
-        address _approver,
-        bytes calldata _signature
-    ) external override onlyWhenLocked {
+    function unlock(address _approver, bytes calldata _signature) external override onlyWhenLocked {
         if (_approver != address(this) && !LibGuardian.isGuardian(_approver)) {
             revert LockFacet__InvalidApprover();
         }
-        if (
-            !SignatureChecker.isValidSignatureNow(
-                _approver,
-                getUnlockHash(),
-                _signature
-            )
-        ) {
+        if (!SignatureChecker.isValidSignatureNow(_approver, getUnlockHash(), _signature)) {
             revert LockFacet__InvalidSignature();
         }
         _unlock();
@@ -113,14 +104,7 @@ contract LockFacet is ILockFacet, Modifiers {
         unlockHash = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
-                keccak256(
-                    abi.encode(
-                        "Unlock",
-                        address(this),
-                        block.chainid,
-                        lockNonce()
-                    )
-                )
+                keccak256(abi.encode("Unlock", address(this), block.chainid, lockNonce()))
             )
         );
     }
@@ -137,12 +121,7 @@ contract LockFacet is ILockFacet, Modifiers {
      * @notice Returns the overall information of current lock
      * @return pendingLock Struct value including all information of pending lock
      */
-    function getPendingLock()
-        public
-        view
-        override
-        returns (Lock memory pendingLock)
-    {
+    function getPendingLock() public view override returns (Lock memory pendingLock) {
         pendingLock = s.locks[INNER_STRUCT];
     }
 }

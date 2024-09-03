@@ -44,11 +44,7 @@ library AssociatedLinkedListSetLib {
     /// @param associated The address the set is associated with.
     /// @param value The value to add.
     /// @return True if the value was added, false if the value cannot be added (already exists or is zero).
-    function tryAdd(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value
-    ) internal returns (bool) {
+    function tryAdd(AssociatedLinkedListSet storage set, address associated, SetValue value) internal returns (bool) {
         bytes32 unwrappedKey = bytes32(SetValue.unwrap(value));
         if (unwrappedKey == bytes32(0)) {
             // Cannot add the zero value
@@ -89,11 +85,10 @@ library AssociatedLinkedListSetLib {
     /// @param associated The address the set is associated with
     /// @param value The value to remove
     /// @return True if the value was removed, false if the value does not exist
-    function tryRemove(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value
-    ) internal returns (bool) {
+    function tryRemove(AssociatedLinkedListSet storage set, address associated, SetValue value)
+        internal
+        returns (bool)
+    {
         bytes32 unwrappedKey = bytes32(SetValue.unwrap(value));
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
@@ -122,12 +117,7 @@ library AssociatedLinkedListSetLib {
                 // map[prevKey] = clearFlags(nextValue) | getUserFlags(currentVal) | (nextValue & HAS_NEXT_FLAG);
                 // map[currentKey] = bytes32(0);
 
-                _store(
-                    prevSlot,
-                    clearFlags(nextValue) |
-                        getUserFlags(currentVal) |
-                        (nextValue & HAS_NEXT_FLAG)
-                );
+                _store(prevSlot, clearFlags(nextValue) | getUserFlags(currentVal) | (nextValue & HAS_NEXT_FLAG));
                 _store(valueSlot, bytes32(0));
 
                 return true;
@@ -144,12 +134,10 @@ library AssociatedLinkedListSetLib {
     /// @param value The value to remove
     /// @param prev The previous value in the set
     /// @return True if the value was removed, false if the value does not exist
-    function tryRemoveKnown(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        bytes32 prev
-    ) internal returns (bool) {
+    function tryRemoveKnown(AssociatedLinkedListSet storage set, address associated, SetValue value, bytes32 prev)
+        internal
+        returns (bool)
+    {
         bytes32 unwrappedKey = bytes32(SetValue.unwrap(value));
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
@@ -186,10 +174,7 @@ library AssociatedLinkedListSetLib {
     /// @dev This is an O(n) operation, where n is the number of elements in the set.
     /// @param set The set to remove the values from
     /// @param associated The address the set is associated with
-    function clear(
-        AssociatedLinkedListSet storage set,
-        address associated
-    ) internal {
+    function clear(AssociatedLinkedListSet storage set, address associated) internal {
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
         bytes32 cursor = SENTINEL_VALUE;
@@ -210,12 +195,10 @@ library AssociatedLinkedListSetLib {
     /// @param value The value to set the flags on.
     /// @param flags The flags to set.
     /// @return True if the set contains the value and the operation succeeds, false otherwise.
-    function trySetFlags(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function trySetFlags(AssociatedLinkedListSet storage set, address associated, SetValue value, uint16 flags)
+        internal
+        returns (bool)
+    {
         bytes32 unwrappedKey = SetValue.unwrap(value);
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
@@ -245,12 +228,10 @@ library AssociatedLinkedListSetLib {
     /// @param flags The flags to enable.
     /// @return True if the operation succeeds or short-circuits due to the flags already being enabled. False
     /// otherwise.
-    function tryEnableFlags(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function tryEnableFlags(AssociatedLinkedListSet storage set, address associated, SetValue value, uint16 flags)
+        internal
+        returns (bool)
+    {
         flags &= 0xFFFC; // Allow short-circuit if lower bits are accidentally set
         uint16 currFlags = getFlags(set, associated, value);
         if (currFlags & flags == flags) return true; // flags are already enabled
@@ -269,12 +250,10 @@ library AssociatedLinkedListSetLib {
     /// @param flags The flags to disable.
     /// @return True if the operation succeeds, or short-circuits due to the flags already being disabled or if the
     /// set does not contain the value. False otherwise.
-    function tryDisableFlags(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function tryDisableFlags(AssociatedLinkedListSet storage set, address associated, SetValue value, uint16 flags)
+        internal
+        returns (bool)
+    {
         flags &= 0xFFFC; // Allow short-circuit if lower bits are accidentally set
         uint16 currFlags = getFlags(set, associated, value);
         if (currFlags & flags == 0) return true; // flags are already disabled
@@ -289,11 +268,11 @@ library AssociatedLinkedListSetLib {
     /// @param associated The address the set is associated with
     /// @param value The value to check for
     /// @return True if the set contains the value, false otherwise
-    function contains(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value
-    ) internal view returns (bool) {
+    function contains(AssociatedLinkedListSet storage set, address associated, SetValue value)
+        internal
+        view
+        returns (bool)
+    {
         bytes32 unwrappedKey = bytes32(SetValue.unwrap(value));
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
@@ -305,10 +284,7 @@ library AssociatedLinkedListSetLib {
     /// @param set The set to check
     /// @param associated The address the set is associated with
     /// @return True if the set is empty, false otherwise
-    function isEmpty(
-        AssociatedLinkedListSet storage set,
-        address associated
-    ) internal view returns (bool) {
+    function isEmpty(AssociatedLinkedListSet storage set, address associated) internal view returns (bool) {
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
 
         StoragePointer sentinelSlot = _mapLookup(keyBuffer, SENTINEL_VALUE);
@@ -323,17 +299,14 @@ library AssociatedLinkedListSetLib {
     /// @param associated The address the set is associated with.
     /// @param value The value to get the flags from.
     /// @return The flags set on the value.
-    function getFlags(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value
-    ) internal view returns (uint16) {
+    function getFlags(AssociatedLinkedListSet storage set, address associated, SetValue value)
+        internal
+        view
+        returns (uint16)
+    {
         bytes32 unwrappedKey = SetValue.unwrap(value);
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
-        return
-            uint16(
-                uint256(_load(_mapLookup(keyBuffer, unwrappedKey))) & 0xFFFC
-            );
+        return uint16(uint256(_load(_mapLookup(keyBuffer, unwrappedKey))) & 0xFFFC);
     }
 
     /// @notice Check if the flags on a value are enabled.
@@ -343,12 +316,11 @@ library AssociatedLinkedListSetLib {
     /// @param value The value to check the flags on.
     /// @param flags The flags to check.
     /// @return True if all of the flags are enabled, false otherwise.
-    function flagsEnabled(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        uint16 flags
-    ) internal view returns (bool) {
+    function flagsEnabled(AssociatedLinkedListSet storage set, address associated, SetValue value, uint16 flags)
+        internal
+        view
+        returns (bool)
+    {
         flags &= 0xFFFC;
         return getFlags(set, associated, value) & flags == flags;
     }
@@ -360,12 +332,11 @@ library AssociatedLinkedListSetLib {
     /// @param value The value to check the flags on.
     /// @param flags The flags to check.
     /// @return True if all of the flags are disabled, false otherwise.
-    function flagsDisabled(
-        AssociatedLinkedListSet storage set,
-        address associated,
-        SetValue value,
-        uint16 flags
-    ) internal view returns (bool) {
+    function flagsDisabled(AssociatedLinkedListSet storage set, address associated, SetValue value, uint16 flags)
+        internal
+        view
+        returns (bool)
+    {
         flags &= 0xFFFC;
         return ~(getFlags(set, associated, value)) & flags == flags;
     }
@@ -374,10 +345,11 @@ library AssociatedLinkedListSetLib {
     /// @dev This is an O(n) operation, where n is the number of elements in the set.
     /// @param set The set to get the elements of.
     /// @return ret An array of all elements in the set.
-    function getAll(
-        AssociatedLinkedListSet storage set,
-        address associated
-    ) internal view returns (SetValue[] memory ret) {
+    function getAll(AssociatedLinkedListSet storage set, address associated)
+        internal
+        view
+        returns (SetValue[] memory ret)
+    {
         TempBytesMemory keyBuffer = _allocateTempKeyBuffer(set, associated);
         uint256 size;
         bytes32 cursor = _load(_mapLookup(keyBuffer, SENTINEL_VALUE));
@@ -440,16 +412,12 @@ library AssociatedLinkedListSetLib {
     }
 
     function clearFlags(bytes32 val) internal pure returns (bytes32) {
-        return
-            val &
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0001;
+        return val & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0001;
     }
 
     /// @dev Preserves the lower two bits
     function clearUserFlags(bytes32 val) internal pure returns (bytes32) {
-        return
-            val &
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0003;
+        return val & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0003;
     }
 
     function getUserFlags(bytes32 val) internal pure returns (bytes32) {
@@ -459,10 +427,7 @@ library AssociatedLinkedListSetLib {
     // PRIVATE METHODS
 
     /// @notice Given an allocated key buffer, returns the storage slot for a given key
-    function _mapLookup(
-        TempBytesMemory keyBuffer,
-        bytes32 value
-    ) private pure returns (StoragePointer slot) {
+    function _mapLookup(TempBytesMemory keyBuffer, bytes32 value) private pure returns (StoragePointer slot) {
         assembly ("memory-safe") {
             // Store the value in the last word.
             mstore(add(keyBuffer, 0x60), value)
@@ -476,10 +441,11 @@ library AssociatedLinkedListSetLib {
     /// @param set The set to allocate the key buffer for.
     /// @param associated The address the set is associated with.
     /// @return key A key buffer that can be used to lookup values in the set
-    function _allocateTempKeyBuffer(
-        AssociatedLinkedListSet storage set,
-        address associated
-    ) private pure returns (TempBytesMemory key) {
+    function _allocateTempKeyBuffer(AssociatedLinkedListSet storage set, address associated)
+        private
+        pure
+        returns (TempBytesMemory key)
+    {
         // Key derivation for an entry
         // Note: `||` refers to the concat operator
         // associated addr (left-padded) || prefix || uint224(0) batchIndex || set storage slot || entry
@@ -505,10 +471,7 @@ library AssociatedLinkedListSetLib {
         // See https://docs.soliditylang.org/en/v0.8.22/assembly.html#memory-safety
         assembly ("memory-safe") {
             // Clean upper bits of arguments
-            associated := and(
-                associated,
-                0xffffffffffffffffffffffffffffffffffffffff
-            )
+            associated := and(associated, 0xffffffffffffffffffffffffffffffffffffffff)
 
             // Use memory past-the-free-memory-pointer without updating it, as this is just scratch space
             key := mload(0x40)

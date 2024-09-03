@@ -23,7 +23,14 @@ import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/Signa
 
 import {LibCast} from "../../libraries/LibCast.sol";
 import {UserOperation} from "../../aa-4337/interfaces/UserOperation.sol";
-import {ManifestAssociatedFunction, ManifestAssociatedFunctionType, ManifestFunction, ModuleManifest, ModuleMetadata, SelectorPermission} from "../../facets/msca/interfaces/IModule.sol";
+import {
+    ManifestAssociatedFunction,
+    ManifestAssociatedFunctionType,
+    ManifestFunction,
+    ModuleManifest,
+    ModuleMetadata,
+    SelectorPermission
+} from "../../facets/msca/interfaces/IModule.sol";
 import {IModuleManager} from "../../facets/msca/interfaces/IModuleManager.sol";
 import {IStandardExecutor} from "../../facets/msca/interfaces/IStandardExecutor.sol";
 import {AssociatedLinkedListSet, AssociatedLinkedListSetLib} from "./AssociatedLinkedListSetLib.sol";
@@ -58,9 +65,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     string internal constant _AUTHOR = "Alchemy";
 
     bytes32 private constant _TYPE_HASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
-        );
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)");
     bytes32 private constant _HASHED_NAME = keccak256(bytes(_NAME));
     bytes32 private constant _HASHED_VERSION = keccak256(bytes(_VERSION));
     bytes32 private immutable _SALT = bytes32(bytes20(address(this)));
@@ -69,8 +74,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     bytes4 internal constant _1271_MAGIC_VALUE = 0x1626ba7e;
     bytes4 internal constant _1271_MAGIC_VALUE_FAILURE = 0xffffffff;
 
-    bytes32 private constant MODULAR_ACCOUNT_TYPEHASH =
-        keccak256("AlchemyModularAccountMessage(bytes message)");
+    bytes32 private constant MODULAR_ACCOUNT_TYPEHASH = keccak256("AlchemyModularAccountMessage(bytes message)");
 
     AssociatedLinkedListSet internal _owners;
 
@@ -81,10 +85,10 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     /// @inheritdoc IMultiOwnerModule
     /// @dev If an owner is present in both ownersToAdd and ownersToRemove, it will be added as owner.
     /// The owner array cannot have 0 or duplicated addresses.
-    function updateOwners(
-        address[] memory ownersToAdd,
-        address[] memory ownersToRemove
-    ) public isInitialized(msg.sender) {
+    function updateOwners(address[] memory ownersToAdd, address[] memory ownersToRemove)
+        public
+        isInitialized(msg.sender)
+    {
         _removeOwnersOrRevert(_owners, msg.sender, ownersToRemove);
         _addOwnersOrRevert(_owners, msg.sender, ownersToAdd);
 
@@ -132,31 +136,16 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     /// validation used in `validateUserOp`, this does not wrap the digest in
     /// an "Ethereum Signed Message" envelope before checking the signature in
     /// the EOA-owner case.
-    function isValidSignature(
-        bytes32 digest,
-        bytes memory signature
-    ) public view override returns (bytes4) {
+    function isValidSignature(bytes32 digest, bytes memory signature) public view override returns (bytes4) {
         bytes32 messageHash = getMessageHash(msg.sender, abi.encode(digest));
 
         // try to recover through ECDSA
-        (address signer, ECDSA.RecoverError error) = ECDSA.tryRecover(
-            messageHash,
-            signature
-        );
-        if (
-            error == ECDSA.RecoverError.NoError &&
-            _owners.contains(msg.sender, LibCast.toSetValue(signer))
-        ) {
+        (address signer, ECDSA.RecoverError error) = ECDSA.tryRecover(messageHash, signature);
+        if (error == ECDSA.RecoverError.NoError && _owners.contains(msg.sender, LibCast.toSetValue(signer))) {
             return _1271_MAGIC_VALUE;
         }
 
-        if (
-            _isValidERC1271OwnerTypeSignature(
-                msg.sender,
-                messageHash,
-                signature
-            )
-        ) {
+        if (_isValidERC1271OwnerTypeSignature(msg.sender, messageHash, signature)) {
             return _1271_MAGIC_VALUE;
         }
 
@@ -169,9 +158,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
 
     /// @inheritdoc BaseModule
     /// @dev The owner array cannot have 0 or duplicated addresses.
-    function _onInstall(
-        bytes calldata data
-    ) internal override isNotInitialized(msg.sender) {
+    function _onInstall(bytes calldata data) internal override isNotInitialized(msg.sender) {
         address[] memory initialOwners = abi.decode(data, (address[]));
         if (initialOwners.length == 0) {
             revert EmptyOwnersNotAllowed();
@@ -193,29 +180,20 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     /// @dev Since owner can be an ERC-1271 compliant contract, we won't know the format of the signatures.
     /// Therefore, any invalid signature are treated as mismatched signatures in the ERC-4337 context unless
     /// reverted in ERC-1271 owner signature validation.
-    function userOpValidationFunction(
-        uint8 functionId,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external view override returns (uint256) {
+    function userOpValidationFunction(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        view
+        override
+        returns (uint256)
+    {
         if (functionId == uint8(FunctionId.USER_OP_VALIDATION_OWNER)) {
-            (address signer, ECDSA.RecoverError error) = userOpHash
-                .toEthSignedMessageHash()
-                .tryRecover(userOp.signature);
-            if (
-                error == ECDSA.RecoverError.NoError &&
-                isOwnerOf(msg.sender, signer)
-            ) {
+            (address signer, ECDSA.RecoverError error) =
+                userOpHash.toEthSignedMessageHash().tryRecover(userOp.signature);
+            if (error == ECDSA.RecoverError.NoError && isOwnerOf(msg.sender, signer)) {
                 return SIG_VALIDATION_PASSED;
             }
 
-            if (
-                _isValidERC1271OwnerTypeSignature(
-                    msg.sender,
-                    userOpHash,
-                    userOp.signature
-                )
-            ) {
+            if (_isValidERC1271OwnerTypeSignature(msg.sender, userOpHash, userOp.signature)) {
                 return SIG_VALIDATION_PASSED;
             }
 
@@ -226,12 +204,11 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     }
 
     /// @inheritdoc BaseModule
-    function runtimeValidationFunction(
-        uint8 functionId,
-        address sender,
-        uint256,
-        bytes calldata
-    ) external view override {
+    function runtimeValidationFunction(uint8 functionId, address sender, uint256, bytes calldata)
+        external
+        view
+        override
+    {
         if (functionId == uint8(FunctionId.RUNTIME_VALIDATION_OWNER_OR_SELF)) {
             // Validate that the sender is an owner of the account, or self.
             if (sender != msg.sender && !isOwnerOf(msg.sender, sender)) {
@@ -243,12 +220,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     }
 
     /// @inheritdoc BaseModule
-    function moduleManifest()
-        public
-        pure
-        override
-        returns (ModuleManifest memory)
-    {
+    function moduleManifest() public pure override returns (ModuleManifest memory) {
         ModuleManifest memory manifest;
 
         manifest.executionFunctions = new bytes4[](3);
@@ -256,19 +228,16 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
         manifest.executionFunctions[1] = this.eip712Domain.selector;
         manifest.executionFunctions[2] = this.isValidSignature.selector;
 
-        ManifestFunction
-            memory ownerUserOpValidationFunction = ManifestFunction({
-                functionType: ManifestAssociatedFunctionType.SELF,
-                functionId: uint8(FunctionId.USER_OP_VALIDATION_OWNER),
-                dependencyIndex: 0 // Unused.
-            });
+        ManifestFunction memory ownerUserOpValidationFunction = ManifestFunction({
+            functionType: ManifestAssociatedFunctionType.SELF,
+            functionId: uint8(FunctionId.USER_OP_VALIDATION_OWNER),
+            dependencyIndex: 0 // Unused.
+        });
 
         // Update Modular Account's native functions to use userOpValidationFunction provided by this module
         // The view functions `isValidSignature` and `eip712Domain` are excluded from being assigned a user
         // operation validation function since they should only be called via the runtime path.
-        manifest.userOpValidationFunctions = new ManifestAssociatedFunction[](
-            5
-        );
+        manifest.userOpValidationFunctions = new ManifestAssociatedFunction[](5);
         manifest.userOpValidationFunctions[0] = ManifestAssociatedFunction({
             executionSelector: this.updateOwners.selector,
             associatedFunction: ownerUserOpValidationFunction
@@ -290,23 +259,19 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
             associatedFunction: ownerUserOpValidationFunction
         });
 
-        ManifestFunction
-            memory ownerOrSelfRuntimeValidationFunction = ManifestFunction({
-                functionType: ManifestAssociatedFunctionType.SELF,
-                functionId: uint8(FunctionId.RUNTIME_VALIDATION_OWNER_OR_SELF),
-                dependencyIndex: 0 // Unused.
-            });
+        ManifestFunction memory ownerOrSelfRuntimeValidationFunction = ManifestFunction({
+            functionType: ManifestAssociatedFunctionType.SELF,
+            functionId: uint8(FunctionId.RUNTIME_VALIDATION_OWNER_OR_SELF),
+            dependencyIndex: 0 // Unused.
+        });
         ManifestFunction memory alwaysAllowFunction = ManifestFunction({
-            functionType: ManifestAssociatedFunctionType
-                .RUNTIME_VALIDATION_ALWAYS_ALLOW,
+            functionType: ManifestAssociatedFunctionType.RUNTIME_VALIDATION_ALWAYS_ALLOW,
             functionId: 0, // Unused.
             dependencyIndex: 0 // Unused.
         });
 
         // Update Modular Account's native functions to use runtimeValidationFunction provided by this module
-        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](
-            7
-        );
+        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](7);
         manifest.runtimeValidationFunctions[0] = ManifestAssociatedFunction({
             executionSelector: this.updateOwners.selector,
             associatedFunction: ownerOrSelfRuntimeValidationFunction
@@ -340,13 +305,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     }
 
     /// @inheritdoc BaseModule
-    function moduleMetadata()
-        external
-        pure
-        virtual
-        override
-        returns (ModuleMetadata memory)
-    {
+    function moduleMetadata() external pure virtual override returns (ModuleMetadata memory) {
         ModuleMetadata memory metadata;
         metadata.name = _NAME;
         metadata.version = _VERSION;
@@ -374,12 +333,8 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     // ┗━━━━━━━━━━━━━━━┛
 
     /// @inheritdoc BaseModule
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override returns (bool) {
-        return
-            interfaceId == type(IMultiOwnerModule).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == type(IMultiOwnerModule).interfaceId || super.supportsInterface(interfaceId);
     }
 
     // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -387,10 +342,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
     /// @inheritdoc IMultiOwnerModule
-    function isOwnerOf(
-        address account,
-        address ownerToCheck
-    ) public view returns (bool) {
+    function isOwnerOf(address account, address ownerToCheck) public view returns (bool) {
         return _owners.contains(account, LibCast.toSetValue(ownerToCheck));
     }
 
@@ -400,26 +352,13 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     }
 
     /// @inheritdoc IMultiOwnerModule
-    function encodeMessageData(
-        address account,
-        bytes memory message
-    ) public view override returns (bytes memory) {
-        bytes32 messageHash = keccak256(
-            abi.encode(MODULAR_ACCOUNT_TYPEHASH, keccak256(message))
-        );
-        return
-            abi.encodePacked(
-                "\x19\x01",
-                _domainSeparator(account),
-                messageHash
-            );
+    function encodeMessageData(address account, bytes memory message) public view override returns (bytes memory) {
+        bytes32 messageHash = keccak256(abi.encode(MODULAR_ACCOUNT_TYPEHASH, keccak256(message)));
+        return abi.encodePacked("\x19\x01", _domainSeparator(account), messageHash);
     }
 
     /// @inheritdoc IMultiOwnerModule
-    function getMessageHash(
-        address account,
-        bytes memory message
-    ) public view override returns (bytes32) {
+    function getMessageHash(address account, bytes memory message) public view override returns (bytes32) {
         return keccak256(encodeMessageData(account, message));
     }
 
@@ -432,17 +371,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
     function _domainSeparator(address account) internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    _TYPE_HASH,
-                    _HASHED_NAME,
-                    _HASHED_VERSION,
-                    block.chainid,
-                    account,
-                    _SALT
-                )
-            );
+        return keccak256(abi.encode(_TYPE_HASH, _HASHED_NAME, _HASHED_VERSION, block.chainid, account, _SALT));
     }
 
     function _addOwnersOrRevert(
@@ -453,9 +382,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
         uint256 length = ownersToAdd.length;
         for (uint256 i = 0; i < length; ++i) {
             // Catches address(0), duplicated addresses
-            if (
-                !ownerSet.tryAdd(associated, LibCast.toSetValue(ownersToAdd[i]))
-            ) {
+            if (!ownerSet.tryAdd(associated, LibCast.toSetValue(ownersToAdd[i]))) {
                 revert InvalidOwner(ownersToAdd[i]);
             }
         }
@@ -468,32 +395,21 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     ) private {
         uint256 length = ownersToRemove.length;
         for (uint256 i = 0; i < length; ++i) {
-            if (
-                !ownerSet.tryRemove(
-                    associated,
-                    LibCast.toSetValue(ownersToRemove[i])
-                )
-            ) {
+            if (!ownerSet.tryRemove(associated, LibCast.toSetValue(ownersToRemove[i]))) {
                 revert OwnerDoesNotExist(ownersToRemove[i]);
             }
         }
     }
 
-    function _isValidERC1271OwnerTypeSignature(
-        address associated,
-        bytes32 digest,
-        bytes memory signature
-    ) private view returns (bool) {
+    function _isValidERC1271OwnerTypeSignature(address associated, bytes32 digest, bytes memory signature)
+        private
+        view
+        returns (bool)
+    {
         address[] memory owners_ = ownersOf(associated);
         uint256 length = owners_.length;
         for (uint256 i = 0; i < length; ++i) {
-            if (
-                SignatureChecker.isValidERC1271SignatureNow(
-                    owners_[i],
-                    digest,
-                    signature
-                )
-            ) {
+            if (SignatureChecker.isValidERC1271SignatureNow(owners_[i], digest, signature)) {
                 return true;
             }
         }
@@ -501,9 +417,7 @@ contract TestMultiOwnerModule is BaseModule, IMultiOwnerModule, IERC1271 {
     }
 
     /// @inheritdoc BaseModule
-    function _isInitialized(
-        address account
-    ) internal view override returns (bool) {
+    function _isInitialized(address account) internal view override returns (bool) {
         return !_owners.isEmpty(account);
     }
 }

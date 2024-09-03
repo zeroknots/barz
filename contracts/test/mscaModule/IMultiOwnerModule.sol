@@ -23,17 +23,14 @@ interface IMultiOwnerModule {
     enum FunctionId {
         RUNTIME_VALIDATION_OWNER_OR_SELF, // require owner or self access
         USER_OP_VALIDATION_OWNER // require owner access
+
     }
 
     /// @notice This event is emitted when owners of the account are updated.
     /// @param account The account whose ownership changed.
     /// @param addedOwners The address array of added owners.
     /// @param removedOwners The address array of removed owners.
-    event OwnerUpdated(
-        address indexed account,
-        address[] addedOwners,
-        address[] removedOwners
-    );
+    event OwnerUpdated(address indexed account, address[] addedOwners, address[] removedOwners);
 
     error InvalidOwner(address owner);
     error EmptyOwnersNotAllowed();
@@ -45,10 +42,7 @@ interface IMultiOwnerModule {
     /// only be called from an account.
     /// @param ownersToAdd The address array of owners to be added.
     /// @param ownersToRemove The address array of owners to be removed.
-    function updateOwners(
-        address[] memory ownersToAdd,
-        address[] memory ownersToRemove
-    ) external;
+    function updateOwners(address[] memory ownersToAdd, address[] memory ownersToRemove) external;
 
     /// @notice Gets the EIP712 domain
     /// @dev This implementation is different from typical 712 via its use of msg.sender instead. As such, it
@@ -70,10 +64,7 @@ interface IMultiOwnerModule {
     /// @param account The account to check.
     /// @param ownerToCheck The owner to check if it is an owner of the provided account.
     /// @return True if the address is an owner of the account.
-    function isOwnerOf(
-        address account,
-        address ownerToCheck
-    ) external view returns (bool);
+    function isOwnerOf(address account, address ownerToCheck) external view returns (bool);
 
     /// @notice Get the owners of `account`.
     /// @param account The account to get the owners of.
@@ -85,17 +76,11 @@ interface IMultiOwnerModule {
     /// @param account SCA to build the message encoding for
     /// @param message Message that should be encoded.
     /// @return Encoded message.
-    function encodeMessageData(
-        address account,
-        bytes memory message
-    ) external view returns (bytes memory);
+    function encodeMessageData(address account, bytes memory message) external view returns (bytes memory);
 
     /// @notice Returns hash of a message that can be signed by owners.
     /// @param account SCA to build the message hash for
     /// @param message Message that should be hashed.
     /// @return Message hash.
-    function getMessageHash(
-        address account,
-        bytes memory message
-    ) external view returns (bytes32);
+    function getMessageHash(address account, bytes memory message) external view returns (bytes32);
 }

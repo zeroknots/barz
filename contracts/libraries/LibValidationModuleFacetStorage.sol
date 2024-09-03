@@ -11,15 +11,9 @@ struct ValidationModuleFacetStorage {
 
 library LibValidationModuleFacetStorage {
     bytes32 constant VALIDATION_MODULE_FACET_STORAGE_POSITION =
-        keccak256(
-            "v0.trustwallet.diamond.storage.ValidationModuleFacetStorage"
-        );
+        keccak256("v0.trustwallet.diamond.storage.ValidationModuleFacetStorage");
 
-    function validationModuleFacetStorage()
-        internal
-        pure
-        returns (ValidationModuleFacetStorage storage ds)
-    {
+    function validationModuleFacetStorage() internal pure returns (ValidationModuleFacetStorage storage ds) {
         bytes32 storagePosition = VALIDATION_MODULE_FACET_STORAGE_POSITION;
         assembly {
             ds.slot := storagePosition

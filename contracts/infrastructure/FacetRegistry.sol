@@ -26,19 +26,19 @@ contract FacetRegistry is IFacetRegistry, Ownable2Step {
      * @param _facet address of facet
      * @param _facetSelectors list of function selectors of the facet
      */
-    function registerFacetFunctionSelectors(
-        address _facet,
-        bytes4[] calldata _facetSelectors
-    ) external override onlyOwner {
+    function registerFacetFunctionSelectors(address _facet, bytes4[] calldata _facetSelectors)
+        external
+        override
+        onlyOwner
+    {
         FacetRegistryConfig storage facetConfig = facets[_facet];
-        for (uint256 i; i < _facetSelectors.length; ) {
-            if (facetConfig.info[_facetSelectors[i]].exists)
+        for (uint256 i; i < _facetSelectors.length;) {
+            if (facetConfig.info[_facetSelectors[i]].exists) {
                 revert FacetRegistry__FacetSelectorAlreadyRegistered();
+            }
 
             facetConfig.info[_facetSelectors[i]].exists = true;
-            facetConfig.info[_facetSelectors[i]].index = uint128(
-                facetConfig.selectors.length
-            );
+            facetConfig.info[_facetSelectors[i]].index = uint128(facetConfig.selectors.length);
             facetConfig.selectors.push(_facetSelectors[i]);
             unchecked {
                 ++i;
@@ -52,22 +52,20 @@ contract FacetRegistry is IFacetRegistry, Ownable2Step {
      * @param _facet address of facet
      * @param _facetSelectors list of function selectors of the facet
      */
-    function removeFacetFunctionSelectors(
-        address _facet,
-        bytes4[] calldata _facetSelectors
-    ) external override onlyOwner {
+    function removeFacetFunctionSelectors(address _facet, bytes4[] calldata _facetSelectors)
+        external
+        override
+        onlyOwner
+    {
         FacetRegistryConfig storage facetConfig = facets[_facet];
-        for (uint256 i; i < _facetSelectors.length; ) {
-            if (!facetConfig.info[_facetSelectors[i]].exists)
+        for (uint256 i; i < _facetSelectors.length;) {
+            if (!facetConfig.info[_facetSelectors[i]].exists) {
                 revert FacetRegistry__UnregisteredFacetSelector();
+            }
 
-            bytes4 lastSelector = facetConfig.selectors[
-                facetConfig.selectors.length - 1
-            ];
+            bytes4 lastSelector = facetConfig.selectors[facetConfig.selectors.length - 1];
             if (_facetSelectors[i] != lastSelector) {
-                uint128 targetIndex = facetConfig
-                    .info[_facetSelectors[i]]
-                    .index;
+                uint128 targetIndex = facetConfig.info[_facetSelectors[i]].index;
                 facetConfig.selectors[targetIndex] = lastSelector;
                 facetConfig.info[lastSelector].index = targetIndex;
             }
@@ -86,13 +84,15 @@ contract FacetRegistry is IFacetRegistry, Ownable2Step {
      * @param _facet Address of facet
      * @param _facetSelectors List of function selectors of the facet
      */
-    function areFacetFunctionSelectorsRegistered(
-        address _facet,
-        bytes4[] calldata _facetSelectors
-    ) external view override returns (bool) {
+    function areFacetFunctionSelectorsRegistered(address _facet, bytes4[] calldata _facetSelectors)
+        external
+        view
+        override
+        returns (bool)
+    {
         FacetRegistryConfig storage facetConfig = facets[_facet];
         if (_facetSelectors.length == 0) return false;
-        for (uint256 i; i < _facetSelectors.length; ) {
+        for (uint256 i; i < _facetSelectors.length;) {
             if (!facetConfig.info[_facetSelectors[i]].exists) return false;
             unchecked {
                 ++i;
@@ -107,10 +107,12 @@ contract FacetRegistry is IFacetRegistry, Ownable2Step {
      * @param _facetSelector List of function selectors of the facet
      * @return isRegistered Bool value showing if the selector is registered
      */
-    function isFacetFunctionSelectorRegistered(
-        address _facet,
-        bytes4 _facetSelector
-    ) external view override returns (bool isRegistered) {
+    function isFacetFunctionSelectorRegistered(address _facet, bytes4 _facetSelector)
+        external
+        view
+        override
+        returns (bool isRegistered)
+    {
         FacetRegistryConfig storage facetConfig = facets[_facet];
         isRegistered = facetConfig.info[_facetSelector].exists;
     }
@@ -120,9 +122,7 @@ contract FacetRegistry is IFacetRegistry, Ownable2Step {
      * @param _facet Address of facet
      * @return selectors Selectors registered to facet
      */
-    function getFacetFunctionSelectors(
-        address _facet
-    ) external view override returns (bytes4[] memory selectors) {
+    function getFacetFunctionSelectors(address _facet) external view override returns (bytes4[] memory selectors) {
         FacetRegistryConfig storage facetConfig = facets[_facet];
         selectors = facetConfig.selectors;
     }

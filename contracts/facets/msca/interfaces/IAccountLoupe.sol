@@ -23,24 +23,18 @@ interface IAccountLoupe {
     /// @dev If the selector is a native function, the module address will be the address of the account.
     /// @param selector The selector to get the configuration for.
     /// @return The configuration for this selector.
-    function getExecutionFunctionConfig(
-        bytes4 selector
-    ) external view returns (ExecutionFunctionConfig memory);
+    function getExecutionFunctionConfig(bytes4 selector) external view returns (ExecutionFunctionConfig memory);
 
     /// @notice Get the pre and post execution hooks for a selector.
     /// @param selector The selector to get the hooks for.
     /// @return The pre and post execution hooks for this selector.
-    function getExecutionHooks(
-        bytes4 selector
-    ) external view returns (ExecutionHooks[] memory);
+    function getExecutionHooks(bytes4 selector) external view returns (ExecutionHooks[] memory);
 
     /// @notice Get the pre user op and runtime validation hooks associated with a selector.
     /// @param selector The selector to get the hooks for.
     /// @return preUserOpValidationHooks The pre user op validation hooks for this selector.
     /// @return preRuntimeValidationHooks The pre runtime validation hooks for this selector.
-    function getPreValidationHooks(
-        bytes4 selector
-    )
+    function getPreValidationHooks(bytes4 selector)
         external
         view
         returns (

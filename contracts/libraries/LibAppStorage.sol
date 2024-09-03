@@ -53,19 +53,12 @@ library LibAppStorage {
         s.initStorage[0].signerInitialized = 0;
     }
 
-    function getValidateOwnerSignatureSelector()
-        internal
-        view
-        returns (bytes4 selector)
-    {
+    function getValidateOwnerSignatureSelector() internal view returns (bytes4 selector) {
         selector = appStorage().validateOwnerSignatureSelector;
     }
 
-    function setValidateOwnerSignatureSelector(
-        bytes4 _validateOwnerSignatureSelector
-    ) internal {
-        appStorage()
-            .validateOwnerSignatureSelector = _validateOwnerSignatureSelector;
+    function setValidateOwnerSignatureSelector(bytes4 _validateOwnerSignatureSelector) internal {
+        appStorage().validateOwnerSignatureSelector = _validateOwnerSignatureSelector;
     }
 
     function enforceSignerInitialize() internal {
@@ -104,33 +97,31 @@ library LibAppStorage {
 
     function enforceRestrictionsInitialize() internal {
         AppStorage storage s = appStorage();
-        if (0 != s.initStorage[0].restrictionsInitialized)
+        if (0 != s.initStorage[0].restrictionsInitialized) {
             revert LibAppStorage__SignerMustBeUninitialized();
+        }
         s.initStorage[0].restrictionsInitialized = 1;
     }
 
     function setRestrictionsUninitialized() internal {
         AppStorage storage s = appStorage();
-        if (1 != s.initStorage[0].restrictionsInitialized)
+        if (1 != s.initStorage[0].restrictionsInitialized) {
             revert LibAppStorage__AccountAlreadyUninitialized();
+        }
         s.initStorage[0].restrictionsInitialized = 0;
     }
 }
 
 contract BarzStorage {
     AppStorage internal s;
+
     modifier onlyWhenUnlocked() {
-        require(
-            uint64(block.timestamp) >= s.locks[0].release,
-            "Account Locked"
-        );
+        require(uint64(block.timestamp) >= s.locks[0].release, "Account Locked");
         _;
     }
+
     modifier onlyWhenLocked() {
-        require(
-            uint64(block.timestamp) < s.locks[0].release,
-            "Account Unlocked"
-        );
+        require(uint64(block.timestamp) < s.locks[0].release, "Account Unlocked");
         _;
     }
 }

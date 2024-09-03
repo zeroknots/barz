@@ -2,8 +2,30 @@
 pragma solidity 0.8.26;
 
 import {UserOperation} from "../../../aa-4337/interfaces/UserOperation.sol";
-import {ExecMode, CallType, ExecType, Execution, ValidationMode, ValidationId, ValidationType, PermissionId, PolicyData, PassFlag, ValidAfter, ValidUntil} from "./Types.sol";
-import {VALIDATOR_VALIDATION_TYPE, PERMISSION_VALIDATION_TYPE, VALIDATOR_MODULE_TYPE, POLICY_MODULE_TYPE, SIGNER_MODULE_TYPE, SKIP_USEROP, SKIP_SIGNATURE, VALIDATION_FAILURE} from "./Constants.sol";
+import {
+    ExecMode,
+    CallType,
+    ExecType,
+    Execution,
+    ValidationMode,
+    ValidationId,
+    ValidationType,
+    PermissionId,
+    PolicyData,
+    PassFlag,
+    ValidAfter,
+    ValidUntil
+} from "./Types.sol";
+import {
+    VALIDATOR_VALIDATION_TYPE,
+    PERMISSION_VALIDATION_TYPE,
+    VALIDATOR_MODULE_TYPE,
+    POLICY_MODULE_TYPE,
+    SIGNER_MODULE_TYPE,
+    SKIP_USEROP,
+    SKIP_SIGNATURE,
+    VALIDATION_FAILURE
+} from "./Constants.sol";
 import {ModuleManager} from "./ModuleManager.sol";
 import {IMMSAFacet} from "../interfaces/IMMSAFacet.sol";
 import {IValidator} from "../interfaces/IValidator.sol";
@@ -18,7 +40,6 @@ import {LibSentinelList} from "../../../libraries/LibSentinelList.sol";
  * @dev Barz implemented permission referencing ZeroDev Permission System. Thanks to ZeroDev team.
  *      We made updates/optimizations to better fit with the need and security model of Barz.
  */
-
 contract ValidationManager {
     using LibSentinelList for LibSentinelList.SentinelList;
 
@@ -30,10 +51,7 @@ contract ValidationManager {
     error ValidationManager__PolicyFailed(address policy);
     error ValidationManager__PermissionNotAllowedForPermission();
 
-    function _installValidation(
-        ValidationId _validationId,
-        bytes calldata _validatorData
-    ) internal {
+    function _installValidation(ValidationId _validationId, bytes calldata _validatorData) internal {
         ValidationType validationType = getValidationType(_validationId);
 
         if (validationType == VALIDATOR_VALIDATION_TYPE) {
@@ -58,7 +76,8 @@ contract ValidationManager {
         MMSAStorage storage mmsaStorage = LibMMSAStorage.mmsaStorage();
         bytes[] calldata permissionInstallationData;
         assembly {
-            permissionInstallationData.offset := add(add(_permissionData.offset, 32), calldataload(_permissionData.offset))
+            permissionInstallationData.offset :=
+                add(add(_permissionData.offset, 32), calldataload(_permissionData.offset))
             permissionInstallationData.length := calldataload(sub(permissionInstallationData.offset, 32))
         }
         if (permissionInstallationData.length > 254 || permissionInstallationData.length == 0) {
@@ -80,14 +99,13 @@ contract ValidationManager {
 
             emit IMMSAFacet.ModuleInstalled(POLICY_MODULE_TYPE, address(bytes20(permissionInstallationData[i][2:22])));
         }
-        
+
         ISigner signer = ISigner(address(bytes20(permissionInstallationData[signerIndex][2:22])));
         mmsaStorage.permissionConfig[_permission].signer = signer;
-        mmsaStorage.permissionConfig[_permission].permissionFlag = PassFlag.wrap(bytes2(permissionInstallationData[signerIndex][0:22]));
+        mmsaStorage.permissionConfig[_permission].permissionFlag =
+            PassFlag.wrap(bytes2(permissionInstallationData[signerIndex][0:22]));
         signer.onInstall(
-            abi.encodePacked(
-                bytes32(PermissionId.unwrap(_permission)), permissionInstallationData[signerIndex][22:]
-            )
+            abi.encodePacked(bytes32(PermissionId.unwrap(_permission)), permissionInstallationData[signerIndex][22:])
         );
         emit IMMSAFacet.ModuleInstalled(SIGNER_MODULE_TYPE, address(signer));
     }
@@ -107,7 +125,9 @@ contract ValidationManager {
         for (uint256 i = 0; i < policyData.length; ++i) {
             (, IPolicy policy) = decodePolicyData(policyData[i]);
 
-            try policy.onUninstall(abi.encodePacked(bytes32(PermissionId.unwrap(_permission)), permissionUninstallData[i])) {} catch {
+            try policy.onUninstall(
+                abi.encodePacked(bytes32(PermissionId.unwrap(_permission)), permissionUninstallData[i])
+            ) {} catch {
                 emit PermissionUninstallCallFailed(address(policy), permissionUninstallData[i]);
             }
 
@@ -115,13 +135,22 @@ contract ValidationManager {
         }
         delete LibMMSAStorage.mmsaStorage().permissionConfig[_permission];
 
-        try permissionConfig.signer.onUninstall(abi.encodePacked(PermissionId.unwrap(_permission), permissionUninstallData[permissionUninstallData.length - 1])) {} catch {
-            emit PermissionUninstallCallFailed(address(permissionConfig.signer), permissionUninstallData[permissionUninstallData.length - 1]);
+        try permissionConfig.signer.onUninstall(
+            abi.encodePacked(
+                PermissionId.unwrap(_permission), permissionUninstallData[permissionUninstallData.length - 1]
+            )
+        ) {} catch {
+            emit PermissionUninstallCallFailed(
+                address(permissionConfig.signer), permissionUninstallData[permissionUninstallData.length - 1]
+            );
         }
         emit IMMSAFacet.ModuleUninstalled(SIGNER_MODULE_TYPE, address(permissionConfig.signer));
     }
 
-    function _validate(ValidationId _validation, UserOperation calldata _userOp, bytes32 _userOpHash) internal returns (uint256 validationData) {
+    function _validate(ValidationId _validation, UserOperation calldata _userOp, bytes32 _userOpHash)
+        internal
+        returns (uint256 validationData)
+    {
         ValidationType validationType = getValidationType(_validation);
 
         if (validationType == VALIDATOR_VALIDATION_TYPE) {
@@ -134,17 +163,27 @@ contract ValidationManager {
         } else {
             PermissionId permissionId = getPermissionId(_validation);
 
-            if (PassFlag.unwrap(LibMMSAStorage.mmsaStorage().permissionConfig[permissionId].permissionFlag) & PassFlag.unwrap(SKIP_USEROP) != 0) {
+            if (
+                PassFlag.unwrap(LibMMSAStorage.mmsaStorage().permissionConfig[permissionId].permissionFlag)
+                    & PassFlag.unwrap(SKIP_USEROP) != 0
+            ) {
                 revert ValidationManager__PermissionNotAllowedForPermission();
             }
 
-            (uint256 policyValidationData, ISigner signer) = _validateUserOpPolicy(permissionId, _userOp, _userOp.signature);
+            (uint256 policyValidationData, ISigner signer) =
+                _validateUserOpPolicy(permissionId, _userOp, _userOp.signature);
             validationData = _mergeValidationData(uint256(0), policyValidationData);
-            validationData = _mergeValidationData(validationData, signer.checkUserOpSignature(bytes32(PermissionId.unwrap(permissionId)), _userOp, _userOpHash));
+            validationData = _mergeValidationData(
+                validationData,
+                signer.checkUserOpSignature(bytes32(PermissionId.unwrap(permissionId)), _userOp, _userOpHash)
+            );
         }
     }
 
-    function _validateUserOpPolicy(PermissionId _permission, UserOperation memory _userOp, bytes calldata _userOpSig) internal returns (uint256 validationData, ISigner signer) {
+    function _validateUserOpPolicy(PermissionId _permission, UserOperation memory _userOp, bytes calldata _userOpSig)
+        internal
+        returns (uint256 validationData, ISigner signer)
+    {
         PermissionConfig storage permissionStorage = LibMMSAStorage.mmsaStorage().permissionConfig[_permission];
         PolicyData[] storage policyData = permissionStorage.policyData;
         for (uint256 i = 0; i < policyData.length; i++) {

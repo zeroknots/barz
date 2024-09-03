@@ -14,11 +14,9 @@ interface IHook is IModule {
     /// @param msgValue The amount of wei sent with the call.
     /// @param msgData The calldata of the transaction.
     /// @return hookData Data that may be used or modified throughout the transaction lifecycle, passed to `postCheck`.
-    function preCheck(
-        address msgSender,
-        uint256 msgValue,
-        bytes calldata msgData
-    ) external returns (bytes memory hookData);
+    function preCheck(address msgSender, uint256 msgValue, bytes calldata msgData)
+        external
+        returns (bytes memory hookData);
 
     /// @notice Performs checks after a transaction is executed to ensure state consistency and log results.
     /// @dev This method is called after the execution of a transaction to verify and react to the execution outcome.

@@ -5,19 +5,20 @@ import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Recei
 import {IERC777Recipient} from "@openzeppelin/contracts/interfaces/IERC777Recipient.sol";
 import {IERC1155Receiver} from "@openzeppelin/contracts/interfaces/IERC1155Receiver.sol";
 
-import {ManifestFunction, ManifestAssociatedFunctionType, ManifestAssociatedFunction, ModuleManifest, ModuleMetadata} from "../../facets/msca/interfaces/IModule.sol";
+import {
+    ManifestFunction,
+    ManifestAssociatedFunctionType,
+    ManifestAssociatedFunction,
+    ModuleManifest,
+    ModuleMetadata
+} from "../../facets/msca/interfaces/IModule.sol";
 import {BaseModule} from "./BaseModule.sol";
 
 /// @title Test Token Receiver Module
 /// @author ERC-6900 Authors
 /// @notice This module allows modular accounts to receive various types of tokens by implementing
 /// required token receiver interfaces.
-contract TestTokenReceiverModule is
-    BaseModule,
-    IERC721Receiver,
-    IERC777Recipient,
-    IERC1155Receiver
-{
+contract TestTokenReceiverModule is BaseModule, IERC721Receiver, IERC777Recipient, IERC1155Receiver {
     string public constant NAME = "Test Token Receiver Module";
     string public constant VERSION = "1.0.0";
     string public constant AUTHOR = "ERC-6900 Authors";
@@ -35,32 +36,25 @@ contract TestTokenReceiverModule is
         bytes calldata // solhint-disable-next-line no-empty-blocks
     ) external pure override {}
 
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external pure override returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 
-    function onERC1155Received(
-        address,
-        address,
-        uint256,
-        uint256,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC1155Received(address, address, uint256, uint256, bytes calldata)
+        external
+        pure
+        override
+        returns (bytes4)
+    {
         return IERC1155Receiver.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(
-        address,
-        address,
-        uint256[] calldata,
-        uint256[] calldata,
-        bytes calldata
-    ) external pure override returns (bytes4) {
+    function onERC1155BatchReceived(address, address, uint256[] calldata, uint256[] calldata, bytes calldata)
+        external
+        pure
+        override
+        returns (bytes4)
+    {
         return IERC1155Receiver.onERC1155BatchReceived.selector;
     }
 
@@ -77,12 +71,7 @@ contract TestTokenReceiverModule is
     function onUninstall(bytes calldata) external pure override {}
 
     /// @inheritdoc BaseModule
-    function moduleManifest()
-        public
-        pure
-        override
-        returns (ModuleManifest memory)
-    {
+    function moduleManifest() public pure override returns (ModuleManifest memory) {
         ModuleManifest memory manifest;
 
         manifest.executionFunctions = new bytes4[](4);
@@ -93,14 +82,11 @@ contract TestTokenReceiverModule is
 
         // Only runtime validationFunction is needed since callbacks come from token contracts only
         ManifestFunction memory alwaysAllowFunction = ManifestFunction({
-            functionType: ManifestAssociatedFunctionType
-                .RUNTIME_VALIDATION_ALWAYS_ALLOW,
+            functionType: ManifestAssociatedFunctionType.RUNTIME_VALIDATION_ALWAYS_ALLOW,
             functionId: 0, // Unused.
             dependencyIndex: 0 // Unused.
         });
-        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](
-            4
-        );
+        manifest.runtimeValidationFunctions = new ManifestAssociatedFunction[](4);
         manifest.runtimeValidationFunctions[0] = ManifestAssociatedFunction({
             executionSelector: this.tokensReceived.selector,
             associatedFunction: alwaysAllowFunction
@@ -131,13 +117,7 @@ contract TestTokenReceiverModule is
     }
 
     /// @inheritdoc BaseModule
-    function moduleMetadata()
-        external
-        pure
-        virtual
-        override
-        returns (ModuleMetadata memory)
-    {
+    function moduleMetadata() external pure virtual override returns (ModuleMetadata memory) {
         ModuleMetadata memory metadata;
         metadata.name = NAME;
         metadata.version = VERSION;

@@ -88,11 +88,11 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param userOp The user operation.
     /// @param userOpHash The user operation hash.
     /// @return Packed validation data for validAfter (6 bytes), validUntil (6 bytes), and authorizer (20 bytes).
-    function preUserOpValidationHook(
-        uint8 functionId,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external virtual returns (uint256) {
+    function preUserOpValidationHook(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        virtual
+        returns (uint256)
+    {
         (functionId, userOp, userOpHash);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -103,11 +103,11 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param userOp The user operation.
     /// @param userOpHash The user operation hash.
     /// @return Packed validation data for validAfter (6 bytes), validUntil (6 bytes), and authorizer (20 bytes).
-    function userOpValidationFunction(
-        uint8 functionId,
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external virtual returns (uint256) {
+    function userOpValidationFunction(uint8 functionId, UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        virtual
+        returns (uint256)
+    {
         (functionId, userOp, userOpHash);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -119,12 +119,10 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param sender The caller address.
     /// @param value The call value.
     /// @param data The calldata sent.
-    function preRuntimeValidationHook(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external virtual {
+    function preRuntimeValidationHook(uint8 functionId, address sender, uint256 value, bytes calldata data)
+        external
+        virtual
+    {
         (functionId, sender, value, data);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -136,12 +134,10 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param sender The caller address.
     /// @param value The call value.
     /// @param data The calldata sent.
-    function runtimeValidationFunction(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external virtual {
+    function runtimeValidationFunction(uint8 functionId, address sender, uint256 value, bytes calldata data)
+        external
+        virtual
+    {
         (functionId, sender, value, data);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -154,12 +150,11 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param value The call value.
     /// @param data The calldata sent.
     /// @return Context to pass to a post execution hook, if present. An empty bytes array MAY be returned.
-    function preExecutionHook(
-        uint8 functionId,
-        address sender,
-        uint256 value,
-        bytes calldata data
-    ) external virtual returns (bytes memory) {
+    function preExecutionHook(uint8 functionId, address sender, uint256 value, bytes calldata data)
+        external
+        virtual
+        returns (bytes memory)
+    {
         (functionId, sender, value, data);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -169,10 +164,7 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param functionId An identifier that routes the call to different internal implementations, should there be
     /// more than one.
     /// @param preExecHookData The context returned by its associated pre execution hook.
-    function postExecutionHook(
-        uint8 functionId,
-        bytes calldata preExecHookData
-    ) external virtual {
+    function postExecutionHook(uint8 functionId, bytes calldata preExecHookData) external virtual {
         (functionId, preExecHookData);
         revert NotImplemented(msg.sig, functionId);
     }
@@ -180,23 +172,14 @@ abstract contract BaseModule is ERC165, IModule {
     /// @notice Describe the contents and intended configuration of the module.
     /// @dev This manifest MUST stay constant over time.
     /// @return A manifest describing the contents and intended configuration of the module.
-    function moduleManifest()
-        external
-        pure
-        virtual
-        returns (ModuleManifest memory)
-    {
+    function moduleManifest() external pure virtual returns (ModuleManifest memory) {
         revert NotImplemented(msg.sig, 0);
     }
 
     /// @notice Describe the metadata of the module.
     /// @dev This metadata MUST stay constant over time.
     /// @return A metadata struct describing the module.
-    function moduleMetadata()
-        external
-        pure
-        virtual
-        returns (ModuleMetadata memory);
+    function moduleMetadata() external pure virtual returns (ModuleMetadata memory);
 
     /// @dev Returns true if this contract implements the interface defined by
     /// `interfaceId`. See the corresponding
@@ -210,12 +193,8 @@ abstract contract BaseModule is ERC165, IModule {
     /// `executeFromModuleExternal` from making calls to modules.
     /// @param interfaceId The interface ID to check for support.
     /// @return True if the contract supports `interfaceId`.
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view virtual override returns (bool) {
-        return
-            interfaceId == type(IModule).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IModule).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice Initialize module data for the modular account.
@@ -232,7 +211,5 @@ abstract contract BaseModule is ERC165, IModule {
     /// @param account The account to check
     /// @return True if the account has initialized this module
     // solhint-disable-next-line no-empty-blocks
-    function _isInitialized(
-        address account
-    ) internal view virtual returns (bool) {}
+    function _isInitialized(address account) internal view virtual returns (bool) {}
 }

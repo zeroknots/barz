@@ -37,7 +37,7 @@ contract GuardianFacet is IGuardianFacet {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
-        for (uint256 i; i < _guardians.length; ) {
+        for (uint256 i; i < _guardians.length;) {
             addGuardian(_guardians[i]);
             unchecked {
                 ++i;
@@ -65,27 +65,18 @@ contract GuardianFacet is IGuardianFacet {
         if (_guardian == address(0)) {
             revert GuardianFacet__ZeroAddressGuardian();
         }
-        if (
-            keccak256(abi.encodePacked(_guardian)) ==
-            keccak256(IVerificationFacet(address(this)).owner())
-        ) {
+        if (keccak256(abi.encodePacked(_guardian)) == keccak256(IVerificationFacet(address(this)).owner())) {
             revert GuardianFacet__OwnerCannotBeGuardian();
         }
 
         bytes32 id = keccak256(abi.encodePacked(_guardian, "ADD"));
-        if (
-            gs.pending[id] != 0 ||
-            block.timestamp <= gs.pending[id] + getSecurityWindow()
-        ) {
+        if (gs.pending[id] != 0 || block.timestamp <= gs.pending[id] + getSecurityWindow()) {
             revert GuardianFacet__DuplicateGuardianAddition();
         }
 
         uint256 securityPeriod = getAdditionSecurityPeriod();
         gs.pending[id] = block.timestamp + securityPeriod;
-        emit GuardianAdditionRequested(
-            _guardian,
-            block.timestamp + securityPeriod
-        );
+        emit GuardianAdditionRequested(_guardian, block.timestamp + securityPeriod);
     }
 
     /**
@@ -98,7 +89,7 @@ contract GuardianFacet is IGuardianFacet {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
-        for (uint256 i; i < _guardians.length; ) {
+        for (uint256 i; i < _guardians.length;) {
             removeGuardian(_guardians[i]);
             unchecked {
                 ++i;
@@ -119,19 +110,13 @@ contract GuardianFacet is IGuardianFacet {
         if (!isGuardian(_guardian)) revert GuardianFacet__NonExistentGuardian();
         GuardianStorage storage gs = LibFacetStorage.guardianStorage();
         bytes32 id = keccak256(abi.encodePacked(_guardian, "REMOVE"));
-        if (
-            gs.pending[id] != 0 ||
-            block.timestamp <= gs.pending[id] + getSecurityWindow()
-        ) {
+        if (gs.pending[id] != 0 || block.timestamp <= gs.pending[id] + getSecurityWindow()) {
             revert GuardianFacet__DuplicateGuardianRemoval();
         }
 
         uint256 securityPeriod = getRemovalSecurityPeriod();
         gs.pending[id] = block.timestamp + securityPeriod;
-        emit GuardianRemovalRequested(
-            _guardian,
-            block.timestamp + securityPeriod
-        );
+        emit GuardianRemovalRequested(_guardian, block.timestamp + securityPeriod);
     }
 
     /**
@@ -140,10 +125,8 @@ contract GuardianFacet is IGuardianFacet {
      *      Guardians are fully added when they pass the validation. Anyone can call this function.
      * @param _guardians Array of guardian addresses to be added
      */
-    function confirmGuardianAdditions(
-        address[] calldata _guardians
-    ) external override {
-        for (uint256 i; i < _guardians.length; ) {
+    function confirmGuardianAdditions(address[] calldata _guardians) external override {
+        for (uint256 i; i < _guardians.length;) {
             confirmGuardianAddition(_guardians[i]);
             unchecked {
                 ++i;
@@ -182,10 +165,8 @@ contract GuardianFacet is IGuardianFacet {
      *      Guardians are fully removed when they pass the validation. Anyone can call this function.
      * @param _guardians Array of guardian addresses to be removed
      */
-    function confirmGuardianRemovals(
-        address[] calldata _guardians
-    ) external override {
-        for (uint256 i; i < _guardians.length; ) {
+    function confirmGuardianRemovals(address[] calldata _guardians) external override {
+        for (uint256 i; i < _guardians.length;) {
             confirmGuardianRemoval(_guardians[i]);
             unchecked {
                 ++i;
@@ -260,15 +241,8 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the uint value if addition security period
      * @return additionSecurityPeriod Uint256 value of addition security period
      */
-    function getAdditionSecurityPeriod()
-        public
-        view
-        override
-        returns (uint256 additionSecurityPeriod)
-    {
-        additionSecurityPeriod = securityManager.additionSecurityPeriodOf(
-            address(this)
-        );
+    function getAdditionSecurityPeriod() public view override returns (uint256 additionSecurityPeriod) {
+        additionSecurityPeriod = securityManager.additionSecurityPeriodOf(address(this));
         if (additionSecurityPeriod == 0) {
             revert GuardianFacet__InvalidAdditionSecurityPeriod();
         }
@@ -279,15 +253,8 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the uint value if removal security period
      * @return removalSecurityPeriod Uint256 value of removal security period
      */
-    function getRemovalSecurityPeriod()
-        public
-        view
-        override
-        returns (uint256 removalSecurityPeriod)
-    {
-        removalSecurityPeriod = securityManager.removalSecurityPeriodOf(
-            address(this)
-        );
+    function getRemovalSecurityPeriod() public view override returns (uint256 removalSecurityPeriod) {
+        removalSecurityPeriod = securityManager.removalSecurityPeriodOf(address(this));
         if (removalSecurityPeriod == 0) {
             revert GuardianFacet__InvalidRemovalSecurityPeriod();
         }
@@ -298,12 +265,7 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the uint value if security window
      * @return securityWindow Uint256 value of removal security period
      */
-    function getSecurityWindow()
-        public
-        view
-        override
-        returns (uint256 securityWindow)
-    {
+    function getSecurityWindow() public view override returns (uint256 securityWindow) {
         securityWindow = securityManager.securityWindowOf(address(this));
         if (securityWindow == 0) {
             revert GuardianFacet__InvalidSecurityWindow();
@@ -315,9 +277,7 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the bool value of whether the guardian address is pending addition
      * @return isPending Bool value of representing the pending of guardian addition
      */
-    function isAdditionPending(
-        address _guardian
-    ) public view override returns (bool isPending) {
+    function isAdditionPending(address _guardian) public view override returns (bool isPending) {
         bytes32 id = keccak256(abi.encodePacked(_guardian, "ADD"));
         isPending = _isPending(id);
     }
@@ -327,9 +287,7 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the bool value of whether the guardian address is pending removal
      * @return isPending Bool value of representing the pending of guardian removal
      */
-    function isRemovalPending(
-        address _guardian
-    ) public view override returns (bool isPending) {
+    function isRemovalPending(address _guardian) public view override returns (bool isPending) {
         bytes32 id = keccak256(abi.encodePacked(_guardian, "REMOVE"));
         isPending = _isPending(id);
     }
@@ -339,13 +297,12 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method returns the bool value whether the hash is pending
      * @return isPending Bool value of representing the pending of guardian operation
      */
-    function _isPending(
-        bytes32 _idHash
-    ) internal view returns (bool isPending) {
+    function _isPending(bytes32 _idHash) internal view returns (bool isPending) {
         GuardianStorage storage gs = LibFacetStorage.guardianStorage();
-        isPending = ((gs.pending[_idHash] > 0 &&
-            gs.pending[_idHash] < block.timestamp) &&
-            block.timestamp < gs.pending[_idHash] + getSecurityWindow());
+        isPending = (
+            (gs.pending[_idHash] > 0 && gs.pending[_idHash] < block.timestamp)
+                && block.timestamp < gs.pending[_idHash] + getSecurityWindow()
+        );
     }
 
     /**
@@ -358,9 +315,7 @@ contract GuardianFacet is IGuardianFacet {
         if (!isAdditionPending(_guardian)) {
             revert GuardianFacet__InvalidGuardianAddition();
         }
-        StorageConfig storage config = LibFacetStorage
-            .guardianStorage()
-            .configs[INNER_STRUCT];
+        StorageConfig storage config = LibFacetStorage.guardianStorage().configs[INNER_STRUCT];
         if (config.info[_guardian].exists) {
             revert GuardianFacet__AlreadyExists();
         }
@@ -380,9 +335,7 @@ contract GuardianFacet is IGuardianFacet {
         if (!isRemovalPending(_guardian)) {
             revert GuardianFacet__InvalidGuardianRemoval();
         }
-        StorageConfig storage config = LibFacetStorage
-            .guardianStorage()
-            .configs[INNER_STRUCT];
+        StorageConfig storage config = LibFacetStorage.guardianStorage().configs[INNER_STRUCT];
         if (!config.info[_guardian].exists) {
             revert GuardianFacet__NonExistentGuardian();
         }
@@ -404,18 +357,11 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method fetches the guardian storage and returns the list of guardian addresses
      * @return guardians Array of addresses comprised of guardian
      */
-    function getGuardians()
-        public
-        view
-        override
-        returns (address[] memory guardians)
-    {
-        StorageConfig storage config = LibFacetStorage
-            .guardianStorage()
-            .configs[INNER_STRUCT];
+    function getGuardians() public view override returns (address[] memory guardians) {
+        StorageConfig storage config = LibFacetStorage.guardianStorage().configs[INNER_STRUCT];
         uint256 guardiansLen = config.addresses.length;
         guardians = new address[](guardiansLen);
-        for (uint256 i; i < guardiansLen; ) {
+        for (uint256 i; i < guardiansLen;) {
             guardians[i] = config.addresses[i];
             unchecked {
                 ++i;
@@ -427,12 +373,7 @@ contract GuardianFacet is IGuardianFacet {
      * @notice Returns the number of majority of guardians
      * @return majorityOfGuardians_ Number of majority of guardians e.g., 2 if 3 guardians / 3 if 5 guardians
      */
-    function majorityOfGuardians()
-        public
-        view
-        override
-        returns (uint256 majorityOfGuardians_)
-    {
+    function majorityOfGuardians() public view override returns (uint256 majorityOfGuardians_) {
         majorityOfGuardians_ = LibGuardian.majorityOfGuardians();
     }
 
@@ -441,15 +382,8 @@ contract GuardianFacet is IGuardianFacet {
      * @dev This method fetches the guardian storage and returns the list of guardian addresses
      * @return guardianNumber Array of guardians in the account
      */
-    function guardianCount()
-        public
-        view
-        override
-        returns (uint256 guardianNumber)
-    {
-        StorageConfig storage config = LibFacetStorage
-            .guardianStorage()
-            .configs[INNER_STRUCT];
+    function guardianCount() public view override returns (uint256 guardianNumber) {
+        StorageConfig storage config = LibFacetStorage.guardianStorage().configs[INNER_STRUCT];
         guardianNumber = config.addresses.length;
     }
 
@@ -457,12 +391,8 @@ contract GuardianFacet is IGuardianFacet {
      * @notice Reads guardian storage and checks if the given address is a guardian
      * @return isGuardian_ Bool value representing if the given address is guardian
      */
-    function isGuardian(
-        address _guardian
-    ) public view override returns (bool isGuardian_) {
-        StorageConfig storage config = LibFacetStorage
-            .guardianStorage()
-            .configs[INNER_STRUCT];
+    function isGuardian(address _guardian) public view override returns (bool isGuardian_) {
+        StorageConfig storage config = LibFacetStorage.guardianStorage().configs[INNER_STRUCT];
         isGuardian_ = config.info[_guardian].exists;
     }
 
@@ -470,12 +400,7 @@ contract GuardianFacet is IGuardianFacet {
      * @notice Checks if the guardian number is zero and returns of guardian facet is okay to be removed
      * @return isRemovable Bool value representing if guardian facet is removable
      */
-    function isGuardianFacetRemovable()
-        external
-        view
-        override
-        returns (bool isRemovable)
-    {
+    function isGuardianFacetRemovable() external view override returns (bool isRemovable) {
         isRemovable = (0 == guardianCount());
     }
 }

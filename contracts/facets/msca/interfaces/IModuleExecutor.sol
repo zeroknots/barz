@@ -8,9 +8,7 @@ interface IModuleExecutor {
     /// calling module for the call to go through.
     /// @param data The calldata to send to the module.
     /// @return The return data from the call.
-    function executeFromModule(
-        bytes calldata data
-    ) external payable returns (bytes memory);
+    function executeFromModule(bytes calldata data) external payable returns (bytes memory);
 
     /// @notice Execute a call from a module to a non-module address.
     /// @dev If the target is a module, the call SHOULD revert. Permissions must be granted to the calling module
@@ -19,9 +17,8 @@ interface IModuleExecutor {
     /// @param value The value to send with the call.
     /// @param data The calldata to send to the target.
     /// @return The return data from the call.
-    function executeFromModuleExternal(
-        address target,
-        uint256 value,
-        bytes calldata data
-    ) external payable returns (bytes memory);
+    function executeFromModuleExternal(address target, uint256 value, bytes calldata data)
+        external
+        payable
+        returns (bytes memory);
 }

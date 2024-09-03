@@ -10,8 +10,7 @@ library Base64 {
     /**
      * @dev Base64 Encoding/Decoding Table
      */
-    string internal constant _TABLE =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    string internal constant _TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
     /**
      * @dev Converts a `bytes` to its Bytes64 `string` representation.
@@ -50,9 +49,7 @@ library Base64 {
             for {
                 let dataPtr := data
                 let endPtr := add(data, mload(data))
-            } lt(dataPtr, endPtr) {
-
-            } {
+            } lt(dataPtr, endPtr) {} {
                 // Advance 3 bytes
                 dataPtr := add(dataPtr, 3)
                 let input := mload(dataPtr)
@@ -65,22 +62,13 @@ library Base64 {
                 // and finally write it in the result pointer but with a left shift
                 // of 256 (1 byte) - 8 (1 ASCII char) = 248 bits
 
-                mstore8(
-                    resultPtr,
-                    mload(add(tablePtr, and(shr(18, input), 0x3F)))
-                )
+                mstore8(resultPtr, mload(add(tablePtr, and(shr(18, input), 0x3F))))
                 resultPtr := add(resultPtr, 1) // Advance
 
-                mstore8(
-                    resultPtr,
-                    mload(add(tablePtr, and(shr(12, input), 0x3F)))
-                )
+                mstore8(resultPtr, mload(add(tablePtr, and(shr(12, input), 0x3F))))
                 resultPtr := add(resultPtr, 1) // Advance
 
-                mstore8(
-                    resultPtr,
-                    mload(add(tablePtr, and(shr(6, input), 0x3F)))
-                )
+                mstore8(resultPtr, mload(add(tablePtr, and(shr(6, input), 0x3F))))
                 resultPtr := add(resultPtr, 1) // Advance
 
                 mstore8(resultPtr, mload(add(tablePtr, and(input, 0x3F))))

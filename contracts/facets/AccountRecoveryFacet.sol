@@ -6,7 +6,13 @@ import {LibAppStorage} from "../libraries/LibAppStorage.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import {LibLoupe} from "../libraries/LibLoupe.sol";
 import {LibGuardian} from "../libraries/LibGuardian.sol";
-import {LibFacetStorage, RecoveryStorage, RecoveryConfig, RecoveryApprovalConfig, ApprovalConfig} from "../libraries/LibFacetStorage.sol";
+import {
+    LibFacetStorage,
+    RecoveryStorage,
+    RecoveryConfig,
+    RecoveryApprovalConfig,
+    ApprovalConfig
+} from "../libraries/LibFacetStorage.sol";
 import {Modifiers} from "./Modifiers.sol";
 import {ISecurityManager} from "../infrastructure/interfaces/ISecurityManager.sol";
 import {IVerificationFacet} from "./interfaces/IVerificationFacet.sol";
@@ -18,8 +24,7 @@ import {IAccountRecoveryFacet} from "./interfaces/IAccountRecoveryFacet.sol";
  * @author David Yongjun Kim (@Powerstream3604)
  */
 contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
-    bytes constant UNINIT_CALL =
-        abi.encodeWithSignature("uninitializeSigner()");
+    bytes constant UNINIT_CALL = abi.encodeWithSignature("uninitializeSigner()");
     ISecurityManager public immutable securityManager;
 
     /**
@@ -37,35 +42,17 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      *      When the threshold(majority of guardians) passes, it automatically executes account recovery
      * @param _recoveryPublicKey Bytes of newly recovered public key of the owner
      */
-    function approveAccountRecovery(
-        bytes calldata _recoveryPublicKey
-    ) external override onlyGuardian {
+    function approveAccountRecovery(bytes calldata _recoveryPublicKey) external override onlyGuardian {
         if (_isRecoveryPending()) {
             revert AccountRecoveryFacet__RecoveryAlreadyOngoing();
         }
-        RecoveryApprovalConfig storage rs = LibFacetStorage
-            .recoveryStorage()
-            .recoveryApprovalConfigs[INNER_STRUCT];
+        RecoveryApprovalConfig storage rs = LibFacetStorage.recoveryStorage().recoveryApprovalConfigs[INNER_STRUCT];
         validateNewOwner(_recoveryPublicKey);
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            _recoveryPublicKey,
-            "ExecuteRecovery"
-        );
-        uint64 approvalValidUntil = uint64(
-            block.timestamp + _getApprovalValidationPeriod()
-        );
-        rs.isNewOwnerApproved[recoveryPublicKeyHash][
-            msg.sender
-        ] = ApprovalConfig(true, approvalValidUntil);
-        emit RecoveryApproved(
-            _recoveryPublicKey,
-            msg.sender,
-            approvalValidUntil
-        );
-        if (
-            getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash) >=
-            LibGuardian.majorityOfGuardians()
-        ) {
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(_recoveryPublicKey, "ExecuteRecovery");
+        uint64 approvalValidUntil = uint64(block.timestamp + _getApprovalValidationPeriod());
+        rs.isNewOwnerApproved[recoveryPublicKeyHash][msg.sender] = ApprovalConfig(true, approvalValidUntil);
+        emit RecoveryApproved(_recoveryPublicKey, msg.sender, approvalValidUntil);
+        if (getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash) >= LibGuardian.majorityOfGuardians()) {
             _executeRecovery(_recoveryPublicKey);
         }
     }
@@ -73,34 +60,21 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
     /**
      * @notice Revoke recovery of account as guardian
      * @dev This method can only be called by guardian and guardian inputs the public key of the new owner
-            When the threshold(majority of guardians) passes, it automatically revokes account recovery when recovery is pending
+     *         When the threshold(majority of guardians) passes, it automatically revokes account recovery when recovery is pending
      * @param _recoveryPublicKey Bytes of newly recovered public key of the owner
      */
-    function revokeAccountRecoveryApproval(
-        bytes calldata _recoveryPublicKey
-    ) external override onlyGuardian {
-        RecoveryApprovalConfig storage rs = LibFacetStorage
-            .recoveryStorage()
-            .recoveryApprovalConfigs[INNER_STRUCT];
+    function revokeAccountRecoveryApproval(bytes calldata _recoveryPublicKey) external override onlyGuardian {
+        RecoveryApprovalConfig storage rs = LibFacetStorage.recoveryStorage().recoveryApprovalConfigs[INNER_STRUCT];
         validateNewOwner(_recoveryPublicKey);
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            _recoveryPublicKey,
-            "ExecuteRecovery"
-        );
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(_recoveryPublicKey, "ExecuteRecovery");
         if (
-            !rs
-            .isNewOwnerApproved[recoveryPublicKeyHash][msg.sender].isApproved ||
-            !(block.timestamp <
-                rs
-                .isNewOwnerApproved[recoveryPublicKeyHash][msg.sender]
-                    .validUntil)
+            !rs.isNewOwnerApproved[recoveryPublicKeyHash][msg.sender].isApproved
+                || !(block.timestamp < rs.isNewOwnerApproved[recoveryPublicKeyHash][msg.sender].validUntil)
         ) {
             revert AccountRecoveryFacet__NonExistentApproval();
         }
 
-        rs.isNewOwnerApproved[recoveryPublicKeyHash][
-            msg.sender
-        ] = ApprovalConfig(false, 0);
+        rs.isNewOwnerApproved[recoveryPublicKeyHash][msg.sender] = ApprovalConfig(false, 0);
         emit RecoveryApprovalRevoked(_recoveryPublicKey, msg.sender);
     }
 
@@ -125,34 +99,22 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
         }
         validateNewOwner(_recoveryPublicKey);
 
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            _recoveryPublicKey,
-            "ExecuteRecovery"
-        );
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(_recoveryPublicKey, "ExecuteRecovery");
 
         _checkApprover(_guardians);
         _checkDuplicateOnChainApprover(recoveryPublicKeyHash, _guardians);
 
         if (
-            _guardians.length +
-                getRecoveryApprovalCountWithTimeValidity(
-                    recoveryPublicKeyHash
-                ) <
-            LibGuardian.majorityOfGuardians()
+            _guardians.length + getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash)
+                < LibGuardian.majorityOfGuardians()
         ) {
             revert AccountRecoveryFacet__InsufficientGuardians();
         }
-        for (uint256 i; i < _guardians.length; ) {
+        for (uint256 i; i < _guardians.length;) {
             if (!LibGuardian.isGuardian(_guardians[i])) {
                 revert AccountRecoveryFacet__InvalidGuardian();
             }
-            if (
-                !SignatureChecker.isValidSignatureNow(
-                    _guardians[i],
-                    recoveryPublicKeyHash,
-                    _signatures[i]
-                )
-            ) {
+            if (!SignatureChecker.isValidSignatureNow(_guardians[i], recoveryPublicKeyHash, _signatures[i])) {
                 revert AccountRecoveryFacet__InvalidGuardianSignature();
             }
             unchecked {
@@ -177,10 +139,7 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
             _recoveryPublicKey,
             executeAfter // NOTE: Remove guardian Count
         );
-        LibAppStorage.setLock(
-            block.timestamp + _getLockPeriod(),
-            AccountRecoveryFacet.executeRecovery.selector
-        );
+        LibAppStorage.setLock(block.timestamp + _getLockPeriod(), AccountRecoveryFacet.executeRecovery.selector);
         emit RecoveryExecuted(_recoveryPublicKey, executeAfter);
     }
 
@@ -194,42 +153,27 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
         if (!_isRecoveryPending()) {
             revert AccountRecoveryFacet__NonexistentRecovery();
         }
-        if (
-            uint64(block.timestamp) <=
-            rs.recoveryConfigs[INNER_STRUCT].executeAfter
-        ) {
+        if (uint64(block.timestamp) <= rs.recoveryConfigs[INNER_STRUCT].executeAfter) {
             revert AccountRecoveryFacet__RecoveryPeriodNotOver();
         }
-        bytes memory recoveryOwner = rs
-            .recoveryConfigs[INNER_STRUCT]
-            .recoveryPublicKey;
+        bytes memory recoveryOwner = rs.recoveryConfigs[INNER_STRUCT].recoveryPublicKey;
 
         delete rs.recoveryConfigs[INNER_STRUCT];
 
         LibAppStorage.setLock(0, bytes4(0));
 
         LibAppStorage.initiateSignerMigration();
-        address verificationFacet = address(
-            bytes20(
-                LibDiamond.diamondStorage().facets[
-                    s.validateOwnerSignatureSelector
-                ]
-            )
-        );
-        (bool uninitSuccess, bytes memory uninitResult) = verificationFacet
-            .delegatecall(UNINIT_CALL);
+        address verificationFacet =
+            address(bytes20(LibDiamond.diamondStorage().facets[s.validateOwnerSignatureSelector]));
+        (bool uninitSuccess, bytes memory uninitResult) = verificationFacet.delegatecall(UNINIT_CALL);
         if (!uninitSuccess) {
             revert AccountRecoveryFacet__CallNotSuccesful();
         }
         if (uint256(bytes32(uninitResult)) != 1) {
             revert AccountRecoveryFacet__SignerUninitializationFailure();
         }
-        bytes memory initCall = abi.encodeWithSignature(
-            "initializeSigner(bytes)",
-            recoveryOwner
-        );
-        (bool initSuccess, bytes memory initResult) = verificationFacet
-            .delegatecall(initCall);
+        bytes memory initCall = abi.encodeWithSignature("initializeSigner(bytes)", recoveryOwner);
+        (bool initSuccess, bytes memory initResult) = verificationFacet.delegatecall(initCall);
         if (!initSuccess) {
             revert AccountRecoveryFacet__CallNotSuccesful();
         }
@@ -245,28 +189,14 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @dev This method approves the cancellation of recovery when recovery is still pending - waiting for finalization
      * @param _recoveryPublicKey Bytes of public key which is pending for recovery
      */
-    function approveCancelRecovery(
-        bytes calldata _recoveryPublicKey
-    ) external override onlyGuardian {
-        RecoveryApprovalConfig storage rs = LibFacetStorage
-            .recoveryStorage()
-            .recoveryApprovalConfigs[INNER_STRUCT];
+    function approveCancelRecovery(bytes calldata _recoveryPublicKey) external override onlyGuardian {
+        RecoveryApprovalConfig storage rs = LibFacetStorage.recoveryStorage().recoveryApprovalConfigs[INNER_STRUCT];
         validateNewOwner(_recoveryPublicKey);
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            _recoveryPublicKey,
-            "CancelRecovery"
-        );
-        uint64 approvalValidUntil = uint64(
-            block.timestamp + _getApprovalValidationPeriod()
-        );
-        rs.isNewOwnerApproved[recoveryPublicKeyHash][
-            msg.sender
-        ] = ApprovalConfig(true, approvalValidUntil);
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(_recoveryPublicKey, "CancelRecovery");
+        uint64 approvalValidUntil = uint64(block.timestamp + _getApprovalValidationPeriod());
+        rs.isNewOwnerApproved[recoveryPublicKeyHash][msg.sender] = ApprovalConfig(true, approvalValidUntil);
         emit RecoveryCancellationApproved(_recoveryPublicKey, msg.sender);
-        if (
-            getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash) >=
-            LibGuardian.majorityOfGuardians()
-        ) {
+        if (getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash) >= LibGuardian.majorityOfGuardians()) {
             _cancelRecovery(_recoveryPublicKey);
         }
     }
@@ -278,19 +208,11 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @param _signature Signature of the owner that signs the hash to hardstop recovery
      */
     function hardstopRecovery(bytes calldata _signature) external override {
-        if (!_isRecoveryPending())
+        if (!_isRecoveryPending()) {
             revert AccountRecoveryFacet__NonexistentRecovery();
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            "0",
-            "HardstopRecovery"
-        );
-        if (
-            !SignatureChecker.isValidSignatureNow(
-                address(this),
-                recoveryPublicKeyHash,
-                _signature
-            )
-        ) {
+        }
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash("0", "HardstopRecovery");
+        if (!SignatureChecker.isValidSignatureNow(address(this), recoveryPublicKeyHash, _signature)) {
             revert AccountRecoveryFacet__InvalidOwnerSignature();
         }
         RecoveryStorage storage rs = LibFacetStorage.recoveryStorage();
@@ -320,34 +242,22 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
         }
         validateNewOwner(_recoveryPublicKey);
 
-        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(
-            _recoveryPublicKey,
-            "CancelRecovery"
-        );
+        bytes32 recoveryPublicKeyHash = getApprovalRecoveryKeyHash(_recoveryPublicKey, "CancelRecovery");
 
         _checkApprover(_guardians);
         _checkDuplicateOnChainApprover(recoveryPublicKeyHash, _guardians);
 
         if (
-            _guardians.length +
-                getRecoveryApprovalCountWithTimeValidity(
-                    recoveryPublicKeyHash
-                ) <
-            LibGuardian.majorityOfGuardians()
+            _guardians.length + getRecoveryApprovalCountWithTimeValidity(recoveryPublicKeyHash)
+                < LibGuardian.majorityOfGuardians()
         ) {
             revert AccountRecoveryFacet__InsufficientGuardians();
         }
-        for (uint256 i; i < _guardians.length; ) {
+        for (uint256 i; i < _guardians.length;) {
             if (!LibGuardian.isGuardian(_guardians[i])) {
                 revert AccountRecoveryFacet__CallerNotGuardian();
             }
-            if (
-                !SignatureChecker.isValidSignatureNow(
-                    _guardians[i],
-                    recoveryPublicKeyHash,
-                    _signatures[i]
-                )
-            ) {
+            if (!SignatureChecker.isValidSignatureNow(_guardians[i], recoveryPublicKeyHash, _signatures[i])) {
                 revert AccountRecoveryFacet__InvalidGuardianSignature();
             }
             unchecked {
@@ -381,13 +291,11 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @dev This method checks if the public key format is correct and reverts otherwise
      * @param _recoveryPublicKey Bytes of newly recovered public key of the owner
      */
-    function validateNewOwner(
-        bytes calldata _recoveryPublicKey
-    ) public view override {
+    function validateNewOwner(bytes calldata _recoveryPublicKey) public view override {
         if (
-            !IVerificationFacet(
-                LibLoupe.facetAddress(s.validateOwnerSignatureSelector)
-            ).isValidKeyType(_recoveryPublicKey)
+            !IVerificationFacet(LibLoupe.facetAddress(s.validateOwnerSignatureSelector)).isValidKeyType(
+                _recoveryPublicKey
+            )
         ) {
             revert AccountRecoveryFacet__InvalidRecoveryPublicKey();
         }
@@ -409,10 +317,12 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @param _saltString Salt string to uniquely identify each recovery hash and for security
      * @return recoveryKeyHash Bytes32 string of the recovery hash
      */
-    function getApprovalRecoveryKeyHash(
-        bytes memory _recoveryPublicKey,
-        string memory _saltString
-    ) public view override returns (bytes32 recoveryKeyHash) {
+    function getApprovalRecoveryKeyHash(bytes memory _recoveryPublicKey, string memory _saltString)
+        public
+        view
+        override
+        returns (bytes32 recoveryKeyHash)
+    {
         recoveryKeyHash = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
@@ -435,12 +345,15 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @param _recoveryPublicKeyHash Bytes hash of newly recovered public key and recovery value of the account
      * @return approvalCount Number of guardians that approved
      */
-    function getRecoveryApprovalCountWithTimeValidity(
-        bytes32 _recoveryPublicKeyHash
-    ) public view override returns (uint256 approvalCount) {
+    function getRecoveryApprovalCountWithTimeValidity(bytes32 _recoveryPublicKeyHash)
+        public
+        view
+        override
+        returns (uint256 approvalCount)
+    {
         address[] memory guardians = LibGuardian.getGuardians();
         uint256 guardianLength = guardians.length;
-        for (uint256 i; i < guardianLength; ) {
+        for (uint256 i; i < guardianLength;) {
             if (isRecoveryApproved(_recoveryPublicKeyHash, guardians[i])) {
                 unchecked {
                     ++approvalCount;
@@ -458,18 +371,16 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @param _approver Address of approver
      * @return isApproved Bool value if recovery hash is approved
      */
-    function isRecoveryApproved(
-        bytes32 _recoveryPublicKeyHash,
-        address _approver
-    ) public view override returns (bool isApproved) {
-        RecoveryApprovalConfig storage rs = LibFacetStorage
-            .recoveryStorage()
-            .recoveryApprovalConfigs[INNER_STRUCT];
+    function isRecoveryApproved(bytes32 _recoveryPublicKeyHash, address _approver)
+        public
+        view
+        override
+        returns (bool isApproved)
+    {
+        RecoveryApprovalConfig storage rs = LibFacetStorage.recoveryStorage().recoveryApprovalConfigs[INNER_STRUCT];
         if (
-            rs
-            .isNewOwnerApproved[_recoveryPublicKeyHash][_approver].isApproved &&
-            block.timestamp <
-            rs.isNewOwnerApproved[_recoveryPublicKeyHash][_approver].validUntil
+            rs.isNewOwnerApproved[_recoveryPublicKeyHash][_approver].isApproved
+                && block.timestamp < rs.isNewOwnerApproved[_recoveryPublicKeyHash][_approver].validUntil
         ) {
             isApproved = true;
         }
@@ -481,16 +392,13 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @param _recoveryPublicKeyHash Hash of recovery information
      * @param _approvers List of approver addresses
      */
-    function _checkDuplicateOnChainApprover(
-        bytes32 _recoveryPublicKeyHash,
-        address[] memory _approvers
-    ) public view {
+    function _checkDuplicateOnChainApprover(bytes32 _recoveryPublicKeyHash, address[] memory _approvers) public view {
         address[] memory guardians = LibGuardian.getGuardians();
         uint256 guardianLength = guardians.length;
         uint256 approversLength = _approvers.length;
-        for (uint256 i; i < guardianLength; ) {
+        for (uint256 i; i < guardianLength;) {
             if (isRecoveryApproved(_recoveryPublicKeyHash, guardians[i])) {
-                for (uint256 j; j < approversLength; ) {
+                for (uint256 j; j < approversLength;) {
                     if (_approvers[j] == guardians[i]) {
                         revert AccountRecoveryFacet__DuplicateApproval();
                     }
@@ -520,11 +428,7 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @notice Returns the lock period of this wallet address from security manager
      * @return recoveryPeriod value of recovery period
      */
-    function _getRecoveryPeriod()
-        internal
-        view
-        returns (uint256 recoveryPeriod)
-    {
+    function _getRecoveryPeriod() internal view returns (uint256 recoveryPeriod) {
         recoveryPeriod = securityManager.recoveryPeriodOf(address(this));
         if (recoveryPeriod == 0) {
             revert AccountRecoveryFacet__InvalidRecoveryPeriod();
@@ -535,14 +439,8 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @notice Returns the approval validation period of this wallet address from security manager
      * @return approvalValidationPeriod value of approval validation period
      */
-    function _getApprovalValidationPeriod()
-        internal
-        view
-        returns (uint256 approvalValidationPeriod)
-    {
-        approvalValidationPeriod = securityManager.approvalValidationPeriodOf(
-            address(this)
-        );
+    function _getApprovalValidationPeriod() internal view returns (uint256 approvalValidationPeriod) {
+        approvalValidationPeriod = securityManager.approvalValidationPeriodOf(address(this));
         if (approvalValidationPeriod == 0) {
             revert AccountRecoveryFacet__InvalidApprovalValidationPeriod();
         }
@@ -560,14 +458,7 @@ contract AccountRecoveryFacet is IAccountRecoveryFacet, Modifiers {
      * @notice Returns the recovery information of the pending recovery
      * @return recoveryConfig value struct of pending recovery
      */
-    function getPendingRecovery()
-        public
-        view
-        override
-        returns (RecoveryConfig memory recoveryConfig)
-    {
-        recoveryConfig = LibFacetStorage.recoveryStorage().recoveryConfigs[
-            INNER_STRUCT
-        ];
+    function getPendingRecovery() public view override returns (RecoveryConfig memory recoveryConfig) {
+        recoveryConfig = LibFacetStorage.recoveryStorage().recoveryConfigs[INNER_STRUCT];
     }
 }

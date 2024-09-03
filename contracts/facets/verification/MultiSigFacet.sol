@@ -49,9 +49,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _owners Bytes of owner public key
      * @return initSuccess Uint value representing the success of init operation
      */
-    function initializeSigner(
-        bytes calldata _owners
-    ) public override returns (uint256 initSuccess) {
+    function initializeSigner(bytes calldata _owners) public override returns (uint256 initSuccess) {
         LibAppStorage.enforceSignerInitialize();
 
         if (!isValidKeyType(_owners)) revert MultiSigFacet__InvalidInitData();
@@ -67,17 +65,16 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
         address currentOwner = SENTINEL_OWNERS;
         uint256 ptr = THRESHOLD;
         address owner_;
-        for (uint256 i; i < ownerCount; ) {
+        for (uint256 i; i < ownerCount;) {
             owner_ = address(bytes20(_owners[ptr:ptr + ADDRESS]));
             ptr += ADDRESS;
-            if (
-                owner_ == address(0) ||
-                owner_ == SENTINEL_OWNERS ||
-                owner_ == address(this) ||
-                owner_ == currentOwner
-            ) revert MultiSigFacet__InvalidOwnerAddress();
-            if (ms.owners[owner_] != address(0))
+            if (owner_ == address(0) || owner_ == SENTINEL_OWNERS || owner_ == address(this) || owner_ == currentOwner)
+            {
+                revert MultiSigFacet__InvalidOwnerAddress();
+            }
+            if (ms.owners[owner_] != address(0)) {
                 revert MultiSigFacet__DuplicateOwner();
+            }
 
             ms.owners[currentOwner] = owner_;
             currentOwner = owner_;
@@ -92,10 +89,12 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
 
         bytes4 validateSelector = validateOwnerSignatureSelector();
 
-        if (LibAppStorage.getValidateOwnerSignatureSelector() != bytes4(0))
+        if (LibAppStorage.getValidateOwnerSignatureSelector() != bytes4(0)) {
             revert VerificationFacet__ValidateOwnerSignatureSelectorAlreadySet();
-        if (LibLoupe.facetAddress(validateSelector) != self)
+        }
+        if (LibLoupe.facetAddress(validateSelector) != self) {
             revert VerificationFacet__InvalidFacetMapping();
+        }
 
         // initialize verification function selector
         LibAppStorage.setValidateOwnerSignatureSelector(validateSelector);
@@ -111,11 +110,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @dev This method checks if the signature migration is undergoing, signer is initialized and sets the signer to zero value.
      * @return uninitSuccess Uint value representing the success of uninit operation
      */
-    function uninitializeSigner()
-        external
-        override
-        returns (uint256 uninitSuccess)
-    {
+    function uninitializeSigner() external override returns (uint256 uninitSuccess) {
         LibAppStorage.enforceSignerMigration();
         LibAppStorage.setSignerUninitialized();
 
@@ -123,7 +118,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
         ++ms.counter;
         address[] memory ownerlist = getOwners();
         uint256 ownerlistLength = ownerlist.length;
-        for (uint256 i; i < ownerlistLength; ) {
+        for (uint256 i; i < ownerlistLength;) {
             ms.owners[ownerlist[i]] = address(0);
             unchecked {
                 ++i;
@@ -131,8 +126,9 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
         }
         ms.owners[SENTINEL_OWNERS] = address(0);
 
-        if (LibAppStorage.getValidateOwnerSignatureSelector() == bytes4(0))
+        if (LibAppStorage.getValidateOwnerSignatureSelector() == bytes4(0)) {
             revert VerificationFacet__ValidateOwnerSignatureSelectorNotSet();
+        }
         LibAppStorage.setValidateOwnerSignatureSelector(bytes4(0));
 
         uninitSuccess = 1;
@@ -148,28 +144,21 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param userOpHash Hash of UserOperation given from EntryPoint. This hash is used for signature validation
      * @return validationData Uint value representing whether the validation is successful. 0 for success, 1 for failure
      */
-    function validateOwnerSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) public view override returns (uint256 validationData) {
+    function validateOwnerSignature(UserOperation calldata userOp, bytes32 userOpHash)
+        public
+        view
+        override
+        returns (uint256 validationData)
+    {
         // Data 1 is invalid, Data 0 is valid
-        validationData = checkSignatures(
-            userOpHash,
-            userOp.signature,
-            LibMultiSigStorage.multisigStorage().threshold
-        );
+        validationData = checkSignatures(userOpHash, userOp.signature, LibMultiSigStorage.multisigStorage().threshold);
     }
 
     /**
      * @notice Returns the selector of function to validate the signature of UserOperation
      * @return ownerSignatureValidatorSelector Bytes4 selector of function signature to validate account owner's UserOperation signature
      */
-    function validateOwnerSignatureSelector()
-        public
-        pure
-        override
-        returns (bytes4 ownerSignatureValidatorSelector)
-    {
+    function validateOwnerSignatureSelector() public pure override returns (bytes4 ownerSignatureValidatorSelector) {
         return this.validateOwnerSignature.selector;
         // The signature name could change according to the facet but the param format(UserOp, UserOpHash) should not change
     }
@@ -181,7 +170,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
     function owner() public view override returns (bytes memory) {
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
 
-        uint totalLength = ms.ownerCount * ADDRESS;
+        uint256 totalLength = ms.ownerCount * ADDRESS;
         bytes memory result = new bytes(totalLength);
 
         // populate return array
@@ -189,10 +178,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
         address currentOwner = ms.owners[SENTINEL_OWNERS];
         while (currentOwner != SENTINEL_OWNERS) {
             assembly {
-                mstore(
-                    add(result, add(32, mul(index, ADDRESS))),
-                    shl(96, currentOwner)
-                )
+                mstore(add(result, add(32, mul(index, ADDRESS))), shl(96, currentOwner))
             }
             currentOwner = ms.owners[currentOwner];
             index++;
@@ -207,14 +193,9 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _publicKey Bytes of public key for format check
      * @return isValid Boolean variable representing if the format of public key is valid
      */
-    function isValidKeyType(
-        bytes memory _publicKey
-    ) public pure override returns (bool isValid) {
+    function isValidKeyType(bytes memory _publicKey) public pure override returns (bool isValid) {
         uint256 publicKeyLength = _publicKey.length;
-        if (
-            publicKeyLength < ADDRESS + THRESHOLD ||
-            (publicKeyLength - THRESHOLD) % ADDRESS != 0
-        ) return false;
+        if (publicKeyLength < ADDRESS + THRESHOLD || (publicKeyLength - THRESHOLD) % ADDRESS != 0) return false;
 
         uint256 threshold = uint256(uint32(bytes4(_publicKey)));
         uint256 ownerCount = (publicKeyLength - THRESHOLD) / ADDRESS;
@@ -229,18 +210,16 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _signature Signature that signed the above hash
      * @return magicValue Bytes4 value representing the success/failure of validation
      */
-    function isValidSignature(
-        bytes32 _hash,
-        bytes calldata _signature
-    ) public view override returns (bytes4 magicValue) {
+    function isValidSignature(bytes32 _hash, bytes calldata _signature)
+        public
+        view
+        override
+        returns (bytes4 magicValue)
+    {
         bytes32 messageData = LibVerification.getMessageHash(_hash);
-        magicValue = (checkSignatures(
-            messageData,
-            _signature,
-            LibMultiSigStorage.multisigStorage().threshold
-        ) == VALID_SIG)
-            ? this.isValidSignature.selector
-            : bytes4(0xffffffff);
+        magicValue = (
+            checkSignatures(messageData, _signature, LibMultiSigStorage.multisigStorage().threshold) == VALID_SIG
+        ) ? this.isValidSignature.selector : bytes4(0xffffffff);
     }
 
     /**
@@ -250,11 +229,11 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _signatures Bytes value of signature which should comply with signature format
      * @param _threshold Uint256 value of current Multi-sig Barz's threshold
      */
-    function checkSignatures(
-        bytes32 _dataHash,
-        bytes calldata _signatures,
-        uint256 _threshold
-    ) public view returns (uint256) {
+    function checkSignatures(bytes32 _dataHash, bytes calldata _signatures, uint256 _threshold)
+        public
+        view
+        returns (uint256)
+    {
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
 
         address lastOwner = address(0);
@@ -263,24 +242,13 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
         uint256 signatureType;
         uint256 nextOffset;
         uint256 i;
-        for (i; i < _threshold; ) {
-            (
-                currentOwner,
-                signature,
-                signatureType,
-                nextOffset
-            ) = splitSignatures(_signatures, nextOffset);
+        for (i; i < _threshold;) {
+            (currentOwner, signature, signatureType, nextOffset) = splitSignatures(_signatures, nextOffset);
             if (nextOffset == 0 && i + 1 < _threshold) return INVALID_SIG;
             if (signatureType == 1) {
                 // If signatureType is 1 then it is default dataHash signed.
                 // This also includes the contract signature
-                if (
-                    !SignatureChecker.isValidSignatureNow(
-                        currentOwner,
-                        _dataHash,
-                        signature
-                    )
-                ) {
+                if (!SignatureChecker.isValidSignatureNow(currentOwner, _dataHash, signature)) {
                     return INVALID_SIG;
                 }
             } else if (signatureType == 2) {
@@ -292,21 +260,13 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
                 // If signatureType is 3 then it is a signed message hash
                 // This also includes the contract signature
                 bytes32 msgHash = _dataHash.toEthSignedMessageHash();
-                if (
-                    !SignatureChecker.isValidSignatureNow(
-                        currentOwner,
-                        msgHash,
-                        signature
-                    )
-                ) {
+                if (!SignatureChecker.isValidSignatureNow(currentOwner, msgHash, signature)) {
                     return INVALID_SIG;
                 }
-            } else revert MultiSigFacet__InvalidRoute();
-            if (
-                currentOwner <= lastOwner ||
-                ms.owners[currentOwner] == address(0) ||
-                currentOwner == SENTINEL_OWNERS
-            ) {
+            } else {
+                revert MultiSigFacet__InvalidRoute();
+            }
+            if (currentOwner <= lastOwner || ms.owners[currentOwner] == address(0) || currentOwner == SENTINEL_OWNERS) {
                 return INVALID_SIG;
             }
             lastOwner = currentOwner;
@@ -323,18 +283,10 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _signatures Bytes value of signature
      * @param _nextOffset Uint256 value of next offset to start splitting the signature
      */
-    function splitSignatures(
-        bytes calldata _signatures,
-        uint256 _nextOffset
-    )
+    function splitSignatures(bytes calldata _signatures, uint256 _nextOffset)
         public
         pure
-        returns (
-            address owner_,
-            bytes memory signature,
-            uint256 signatureType,
-            uint256 nextOffset
-        )
+        returns (address owner_, bytes memory signature, uint256 signatureType, uint256 nextOffset)
     {
         uint256 signaturesLength = _signatures.length;
 
@@ -342,27 +294,15 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
             revert MultiSigFacet__InsufficientSignerLength();
         }
 
-        owner_ = address(
-            bytes20(_signatures[_nextOffset:_nextOffset + ADDRESS])
-        );
+        owner_ = address(bytes20(_signatures[_nextOffset:_nextOffset + ADDRESS]));
 
-        signatureType = uint256(
-            uint8(
-                bytes1(
-                    _signatures[_nextOffset + ADDRESS:_nextOffset +
-                        ADDRESS +
-                        SIG_TYPE]
-                )
-            )
-        );
+        signatureType = uint256(uint8(bytes1(_signatures[_nextOffset + ADDRESS:_nextOffset + ADDRESS + SIG_TYPE])));
 
         if (signatureType > 3 || signatureType == 0) {
             revert MultiSigFacet__InvalidSignatureType();
         }
         uint256 offSet = _nextOffset + ADDRESS + SIG_TYPE;
-        uint256 siglen = uint256(
-            uint32(bytes4(_signatures[offSet:offSet + SIG_LEN]))
-        );
+        uint256 siglen = uint256(uint32(bytes4(_signatures[offSet:offSet + SIG_LEN])));
         if (offSet + siglen > signaturesLength) {
             revert MultiSigFacet__InvalidSignatureLength();
         }
@@ -404,11 +344,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
 
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
 
-        if (
-            _newOwner == address(0) ||
-            _newOwner == SENTINEL_OWNERS ||
-            _newOwner == address(this)
-        ) {
+        if (_newOwner == address(0) || _newOwner == SENTINEL_OWNERS || _newOwner == address(this)) {
             revert MultiSigFacet__InvalidOwnerAddress();
         }
         if (ms.owners[_newOwner] != address(0)) {
@@ -432,11 +368,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _removedOwner Address of owner to be removed
      * @param _threshold Uint256 value of threshold
      */
-    function removeOwner(
-        address _prevOwner,
-        address _removedOwner,
-        uint256 _threshold
-    ) external {
+    function removeOwner(address _prevOwner, address _removedOwner, uint256 _threshold) external {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
@@ -469,21 +401,13 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _oldOwner Address of owner to be removed
      * @param _newOwner Address of owner to be added
      */
-    function swapOwner(
-        address _prevOwner,
-        address _oldOwner,
-        address _newOwner
-    ) public {
+    function swapOwner(address _prevOwner, address _oldOwner, address _newOwner) public {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
 
-        if (
-            _newOwner == address(0) ||
-            _newOwner == SENTINEL_OWNERS ||
-            _newOwner == address(this)
-        ) {
+        if (_newOwner == address(0) || _newOwner == SENTINEL_OWNERS || _newOwner == address(this)) {
             revert MultiSigFacet__InvalidOwnerAddress();
         }
         if (ms.owners[_newOwner] != address(0)) {
@@ -528,8 +452,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @return isOwner_ Bool value showing if it's owner address
      */
     function isOwner(address _owner) public view returns (bool isOwner_) {
-        isOwner_ = (_owner != SENTINEL_OWNERS &&
-            LibMultiSigStorage.multisigStorage().owners[_owner] != address(0));
+        isOwner_ = (_owner != SENTINEL_OWNERS && LibMultiSigStorage.multisigStorage().owners[_owner] != address(0));
     }
 
     /**
@@ -562,9 +485,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _owner Address of owner
      * @return prevOwner Address of previous owner
      */
-    function getPrevOwner(
-        address _owner
-    ) public view returns (address prevOwner) {
+    function getPrevOwner(address _owner) public view returns (address prevOwner) {
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
 
         address currentOwner = ms.owners[SENTINEL_OWNERS];
@@ -585,10 +506,7 @@ contract MultiSigFacet is IMultiSigFacet, IVerificationFacet, IERC1271 {
      * @param _hash Hash of UserOperation
      * @return isApproved Bool value showing if the hash is approved by owner
      */
-    function isApprovedHash(
-        address _owner,
-        bytes32 _hash
-    ) public view returns (bool isApproved) {
+    function isApprovedHash(address _owner, bytes32 _hash) public view returns (bool isApproved) {
         MultiSigStorage storage ms = LibMultiSigStorage.multisigStorage();
         isApproved = (ms.approvedHashes[ms.counter][_owner][_hash] == 1);
     }

@@ -27,14 +27,12 @@ library LibLinkedListSet {
     /// @param set The set to add the value to.
     /// @param value The value to add.
     /// @return True if the value was added, false if the value cannot be added (already exists or is zero).
-    function tryAdd(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal returns (bool) {
+    function tryAdd(LinkedListSet storage set, SetValue value) internal returns (bool) {
         mapping(bytes32 => bytes32) storage map = set.map;
         bytes32 unwrappedKey = SetValue.unwrap(value);
-        if (unwrappedKey == bytes32(0) || map[unwrappedKey] != bytes32(0))
+        if (unwrappedKey == bytes32(0) || map[unwrappedKey] != bytes32(0)) {
             return false;
+        }
 
         bytes32 prev = map[SENTINEL_VALUE];
         if (prev == bytes32(0) || isSentinel(prev)) {
@@ -55,10 +53,7 @@ library LibLinkedListSet {
     /// @param set The set to remove the value from.
     /// @param value The value to remove.
     /// @return True if the value was removed, false if the value does not exist.
-    function tryRemove(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal returns (bool) {
+    function tryRemove(LinkedListSet storage set, SetValue value) internal returns (bool) {
         mapping(bytes32 => bytes32) storage map = set.map;
         bytes32 unwrappedKey = SetValue.unwrap(value);
 
@@ -75,10 +70,7 @@ library LibLinkedListSet {
                 // and the flags to the current value's flags.
                 // and the next value's `hasNext` flag to determine whether or not the next value is (or points to)
                 // the sentinel value.
-                map[prevKey] =
-                    clearFlags(nextValue) |
-                    getUserFlags(currentVal) |
-                    (nextValue & HAS_NEXT_FLAG);
+                map[prevKey] = clearFlags(nextValue) | getUserFlags(currentVal) | (nextValue & HAS_NEXT_FLAG);
                 map[currentKey] = bytes32(0);
 
                 return true;
@@ -94,11 +86,7 @@ library LibLinkedListSet {
     /// @param value The value to remove.
     /// @param prev The previous value in the set.
     /// @return True if the value was removed, false if the value does not exist.
-    function tryRemoveKnown(
-        LinkedListSet storage set,
-        SetValue value,
-        bytes32 prev
-    ) internal returns (bool) {
+    function tryRemoveKnown(LinkedListSet storage set, SetValue value, bytes32 prev) internal returns (bool) {
         mapping(bytes32 => bytes32) storage map = set.map;
         bytes32 unwrappedKey = SetValue.unwrap(value);
 
@@ -147,11 +135,7 @@ library LibLinkedListSet {
     /// @param value The value to set the flags on.
     /// @param flags The flags to set.
     /// @return True if the set contains the value and the operation succeeds, false otherwise.
-    function trySetFlags(
-        LinkedListSet storage set,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function trySetFlags(LinkedListSet storage set, SetValue value, uint16 flags) internal returns (bool) {
         mapping(bytes32 => bytes32) storage map = set.map;
         bytes32 unwrappedKey = SetValue.unwrap(value);
 
@@ -179,11 +163,7 @@ library LibLinkedListSet {
     /// @param flags The flags to enable.
     /// @return True if the operation succeeds or short-circuits due to the flags already being enabled. False
     /// otherwise.
-    function tryEnableFlags(
-        LinkedListSet storage set,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function tryEnableFlags(LinkedListSet storage set, SetValue value, uint16 flags) internal returns (bool) {
         flags &= 0xFFFC; // Allow short-circuit if lower bits are accidentally set
         uint16 currFlags = getFlags(set, value);
         if (currFlags & flags == flags) return true; // flags are already enabled
@@ -201,11 +181,7 @@ library LibLinkedListSet {
     /// @param flags The flags to disable.
     /// @return True if the operation succeeds, or short-circuits due to the flags already being disabled or if the
     /// set does not contain the value. False otherwise.
-    function tryDisableFlags(
-        LinkedListSet storage set,
-        SetValue value,
-        uint16 flags
-    ) internal returns (bool) {
+    function tryDisableFlags(LinkedListSet storage set, SetValue value, uint16 flags) internal returns (bool) {
         flags &= 0xFFFC; // Allow short-circuit if lower bits are accidentally set
         uint16 currFlags = getFlags(set, value);
         if (currFlags & flags == 0) return true; // flags are already disabled
@@ -219,10 +195,7 @@ library LibLinkedListSet {
     /// @param set The set to check.
     /// @param value The value to check for.
     /// @return True if the set contains the value, false otherwise.
-    function contains(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal view returns (bool) {
+    function contains(LinkedListSet storage set, SetValue value) internal view returns (bool) {
         mapping(bytes32 => bytes32) storage map = set.map;
         return map[SetValue.unwrap(value)] != bytes32(0);
     }
@@ -242,10 +215,7 @@ library LibLinkedListSet {
     /// @param set The set containing the value.
     /// @param value The value to get the flags from.
     /// @return The flags set on the value.
-    function getFlags(
-        LinkedListSet storage set,
-        SetValue value
-    ) internal view returns (uint16) {
+    function getFlags(LinkedListSet storage set, SetValue value) internal view returns (uint16) {
         mapping(bytes32 => bytes32) storage map = set.map;
         bytes32 unwrappedKey = SetValue.unwrap(value);
 
@@ -258,11 +228,7 @@ library LibLinkedListSet {
     /// @param value The value to check the flags on.
     /// @param flags The flags to check.
     /// @return True if all of the flags are enabled, false otherwise.
-    function flagsEnabled(
-        LinkedListSet storage set,
-        SetValue value,
-        uint16 flags
-    ) internal view returns (bool) {
+    function flagsEnabled(LinkedListSet storage set, SetValue value, uint16 flags) internal view returns (bool) {
         flags &= 0xFFFC;
         return getFlags(set, value) & flags == flags;
     }
@@ -273,11 +239,7 @@ library LibLinkedListSet {
     /// @param value The value to check the flags on.
     /// @param flags The flags to check.
     /// @return True if all of the flags are disabled, false otherwise.
-    function flagsDisabled(
-        LinkedListSet storage set,
-        SetValue value,
-        uint16 flags
-    ) internal view returns (bool) {
+    function flagsDisabled(LinkedListSet storage set, SetValue value, uint16 flags) internal view returns (bool) {
         flags &= 0xFFFC;
         return ~(getFlags(set, value)) & flags == flags;
     }
@@ -286,9 +248,7 @@ library LibLinkedListSet {
     /// @dev This is an O(n) operation, where n is the number of elements in the set.
     /// @param set The set to get the elements of.
     /// @return ret An array of all elements in the set.
-    function getAll(
-        LinkedListSet storage set
-    ) internal view returns (SetValue[] memory ret) {
+    function getAll(LinkedListSet storage set) internal view returns (SetValue[] memory ret) {
         mapping(bytes32 => bytes32) storage map = set.map;
         uint256 size;
         bytes32 cursor = map[SENTINEL_VALUE];
@@ -346,16 +306,12 @@ library LibLinkedListSet {
     }
 
     function clearFlags(bytes32 val) internal pure returns (bytes32) {
-        return
-            val &
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0001;
+        return val & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0001;
     }
 
     /// @dev Preserves the lower two bits
     function clearUserFlags(bytes32 val) internal pure returns (bytes32) {
-        return
-            val &
-            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0003;
+        return val & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0003;
     }
 
     function getUserFlags(bytes32 val) internal pure returns (bytes32) {

@@ -32,10 +32,7 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _interfaceId InterfaceID to update the mapping
      * @param _flag Bool value to update the mapping of the given interface ID
      */
-    function updateSupportsInterface(
-        bytes4 _interfaceId,
-        bool _flag
-    ) external override onlyWhenUnlocked {
+    function updateSupportsInterface(bytes4 _interfaceId, bool _flag) external override onlyWhenUnlocked {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
@@ -49,18 +46,19 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _diamondCut Contains the facet addresses and function selectors
      * @param _init The address of the contract or facet to execute _calldata. It's prohibited in Barz
      */
-    function diamondCut(
-        FacetCut[] calldata _diamondCut,
-        address _init,
-        bytes calldata
-    ) external override onlyWhenUnlocked {
+    function diamondCut(FacetCut[] calldata _diamondCut, address _init, bytes calldata)
+        external
+        override
+        onlyWhenUnlocked
+    {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
         _checkFacetCutValidity(_diamondCut);
         // require approval from guardian if guardian exists
-        if (0 != LibGuardian.guardianCount())
+        if (0 != LibGuardian.guardianCount()) {
             revert DiamondCutFacet__InvalidRouteWithGuardian();
+        }
         if (address(0) != _init) revert DiamondCutFacet__InvalidInitAddress();
 
         unchecked {
@@ -82,52 +80,48 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
         address[] calldata _approvers,
         bytes[] calldata _signatures
     ) external override onlyWhenUnlocked {
-        if (_approvers.length != _signatures.length)
+        if (_approvers.length != _signatures.length) {
             revert DiamondCutFacet__InvalidArrayLength();
+        }
         _checkFacetCutValidity(_diamondCut);
-        if (0 == LibGuardian.guardianCount())
+        if (0 == LibGuardian.guardianCount()) {
             revert DiamondCutFacet__InvalidRouteWithGuardian();
+        }
 
         bytes32 cutHash = getDiamondCutHash(_diamondCut);
 
         _checkApprover(_approvers);
         _checkDuplicateOnChainApprover(cutHash, _approvers);
 
-        bool onChainOwnerApproval = getOwnerCutApprovalWithTimeValidity(
-            cutHash
-        );
+        bool onChainOwnerApproval = getOwnerCutApprovalWithTimeValidity(cutHash);
 
         uint256 threshold = onChainOwnerApproval ? 0 : 1;
         if (
-            _approvers.length +
-                getDiamondCutApprovalCountWithTimeValidity(cutHash) <
-            LibGuardian.majorityOfGuardians() + threshold
+            _approvers.length + getDiamondCutApprovalCountWithTimeValidity(cutHash)
+                < LibGuardian.majorityOfGuardians() + threshold
         ) revert DiamondCutFacet__InsufficientApprovers();
 
         bool ownerApproved;
-        for (uint256 i; i < _approvers.length; ) {
-            if (
-                !LibGuardian.isGuardian(_approvers[i]) &&
-                _approvers[i] != address(this)
-            ) revert DiamondCutFacet__InvalidApprover();
+        for (uint256 i; i < _approvers.length;) {
+            if (!LibGuardian.isGuardian(_approvers[i]) && _approvers[i] != address(this)) {
+                revert DiamondCutFacet__InvalidApprover();
+            }
             if (_approvers[i] == address(this)) {
-                if (onChainOwnerApproval)
+                if (onChainOwnerApproval) {
                     revert DiamondCutFacet__OwnerAlreadyApproved();
+                }
                 ownerApproved = true;
             }
-            if (
-                !SignatureChecker.isValidSignatureNow(
-                    _approvers[i],
-                    cutHash,
-                    _signatures[i]
-                )
-            ) revert DiamondCutFacet__InvalidApproverSignature();
+            if (!SignatureChecker.isValidSignatureNow(_approvers[i], cutHash, _signatures[i])) {
+                revert DiamondCutFacet__InvalidApproverSignature();
+            }
             unchecked {
                 ++i;
             }
         }
-        if (!ownerApproved && !onChainOwnerApproval)
+        if (!ownerApproved && !onChainOwnerApproval) {
             revert DiamondCutFacet__LackOfOwnerApproval();
+        }
 
         unchecked {
             ++LibFacetStorage.diamondCutStorage().nonce;
@@ -139,29 +133,21 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @notice Approves diamond cut. This can only be called directly from guardian or owner
      * @param _diamondCut Contains the facet addresses and function selectors
      */
-    function approveDiamondCut(
-        FacetCut[] calldata _diamondCut
-    ) public override onlyGuardianOrOwner onlyWhenUnlocked {
-        if (LibGuardian.guardianCount() == 0)
+    function approveDiamondCut(FacetCut[] calldata _diamondCut) public override onlyGuardianOrOwner onlyWhenUnlocked {
+        if (LibGuardian.guardianCount() == 0) {
             revert DiamondCutFacet__InvalidRouteWithoutGuardian();
-        DiamondCutApprovalConfig storage ds = LibFacetStorage
-            .diamondCutStorage()
-            .diamondCutApprovalConfigs[INNER_STRUCT];
+        }
+        DiamondCutApprovalConfig storage ds =
+            LibFacetStorage.diamondCutStorage().diamondCutApprovalConfigs[INNER_STRUCT];
         _checkFacetCutValidity(_diamondCut);
 
         bytes32 cutHash = getDiamondCutHash(_diamondCut);
-        uint64 approvalValidUntil = uint64(
-            block.timestamp + getApprovalValidationPeriod()
-        );
-        ds.isDiamondCutApproved[cutHash][msg.sender] = ApprovalConfig(
-            true,
-            approvalValidUntil
-        );
+        uint64 approvalValidUntil = uint64(block.timestamp + getApprovalValidationPeriod());
+        ds.isDiamondCutApproved[cutHash][msg.sender] = ApprovalConfig(true, approvalValidUntil);
         emit DiamondCutApproved(_diamondCut);
         if (
-            (getDiamondCutApprovalCountWithTimeValidity(cutHash) >=
-                LibGuardian.majorityOfGuardians()) &&
-            getOwnerCutApprovalWithTimeValidity(cutHash)
+            (getDiamondCutApprovalCountWithTimeValidity(cutHash) >= LibGuardian.majorityOfGuardians())
+                && getOwnerCutApprovalWithTimeValidity(cutHash)
         ) {
             unchecked {
                 ++LibFacetStorage.diamondCutStorage().nonce;
@@ -174,15 +160,18 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @notice Revokes the approval of diamond cut. This can only be called directly from guardian or owner
      * @param _diamondCut Contains the facet addresses and function selectors
      */
-    function revokeDiamondCutApproval(
-        FacetCut[] calldata _diamondCut
-    ) public override onlyGuardianOrOwner onlyWhenUnlocked {
-        DiamondCutApprovalConfig storage ds = LibFacetStorage
-            .diamondCutStorage()
-            .diamondCutApprovalConfigs[INNER_STRUCT];
+    function revokeDiamondCutApproval(FacetCut[] calldata _diamondCut)
+        public
+        override
+        onlyGuardianOrOwner
+        onlyWhenUnlocked
+    {
+        DiamondCutApprovalConfig storage ds =
+            LibFacetStorage.diamondCutStorage().diamondCutApprovalConfigs[INNER_STRUCT];
         bytes32 cutHash = getDiamondCutHash(_diamondCut);
-        if (!ds.isDiamondCutApproved[cutHash][msg.sender].isApproved)
+        if (!ds.isDiamondCutApproved[cutHash][msg.sender].isApproved) {
             revert DiamondCutFacet__CannotRevokeUnapproved();
+        }
         ds.isDiamondCutApproved[cutHash][msg.sender] = ApprovalConfig(false, 0);
         emit DiamondCutApprovalRevoked(_diamondCut);
     }
@@ -191,12 +180,15 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @notice Gets the number of approvals of diamond cut from guardians
      * @param _diamondCutHash Hash of diamondCut information including the facet addresses and function selectors
      */
-    function getDiamondCutApprovalCountWithTimeValidity(
-        bytes32 _diamondCutHash
-    ) public view override returns (uint256 approvalCount) {
+    function getDiamondCutApprovalCountWithTimeValidity(bytes32 _diamondCutHash)
+        public
+        view
+        override
+        returns (uint256 approvalCount)
+    {
         address[] memory guardians = LibGuardian.getGuardians();
         uint256 guardiansLength = guardians.length;
-        for (uint256 i; i < guardiansLength; ) {
+        for (uint256 i; i < guardiansLength;) {
             if (isCutApproved(_diamondCutHash, guardians[i])) {
                 unchecked {
                     ++approvalCount;
@@ -214,9 +206,12 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _diamondCutHash Hash of diamondCut information including the facet addresses and function selectors
      * @return isApprovedByOwner Bool value showing if the owner approved the cut
      */
-    function getOwnerCutApprovalWithTimeValidity(
-        bytes32 _diamondCutHash
-    ) public view override returns (bool isApprovedByOwner) {
+    function getOwnerCutApprovalWithTimeValidity(bytes32 _diamondCutHash)
+        public
+        view
+        override
+        returns (bool isApprovedByOwner)
+    {
         isApprovedByOwner = isCutApproved(_diamondCutHash, address(this));
     }
 
@@ -226,17 +221,13 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _approver Address of approver
      * @return isApproved Bool value showing if the approver approved the cut
      */
-    function isCutApproved(
-        bytes32 _diamondCutHash,
-        address _approver
-    ) public view override returns (bool isApproved) {
-        DiamondCutApprovalConfig storage ds = LibFacetStorage
-            .diamondCutStorage()
-            .diamondCutApprovalConfigs[INNER_STRUCT];
-        isApproved = (ds
-        .isDiamondCutApproved[_diamondCutHash][_approver].isApproved &&
-            block.timestamp <
-            ds.isDiamondCutApproved[_diamondCutHash][_approver].validUntil);
+    function isCutApproved(bytes32 _diamondCutHash, address _approver) public view override returns (bool isApproved) {
+        DiamondCutApprovalConfig storage ds =
+            LibFacetStorage.diamondCutStorage().diamondCutApprovalConfigs[INNER_STRUCT];
+        isApproved = (
+            ds.isDiamondCutApproved[_diamondCutHash][_approver].isApproved
+                && block.timestamp < ds.isDiamondCutApproved[_diamondCutHash][_approver].validUntil
+        );
     }
 
     /**
@@ -245,18 +236,16 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _diamondCutHash Hash of diamondCut information including the facet addresses and function selectors
      * @param _approvers List of approver addresses
      */
-    function _checkDuplicateOnChainApprover(
-        bytes32 _diamondCutHash,
-        address[] memory _approvers
-    ) public view {
+    function _checkDuplicateOnChainApprover(bytes32 _diamondCutHash, address[] memory _approvers) public view {
         address[] memory guardians = LibGuardian.getGuardians();
         uint256 guardianLength = guardians.length;
         uint256 approversLength = _approvers.length;
-        for (uint256 i; i < guardianLength; ) {
+        for (uint256 i; i < guardianLength;) {
             if (isCutApproved(_diamondCutHash, guardians[i])) {
-                for (uint256 j; j < approversLength; ) {
-                    if (_approvers[j] == guardians[i])
+                for (uint256 j; j < approversLength;) {
+                    if (_approvers[j] == guardians[i]) {
                         revert DiamondCutFacet__DuplicateApproval();
+                    }
                     unchecked {
                         ++j;
                     }
@@ -274,9 +263,7 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @param _diamondCut Contains the facet addresses and function selectors
      * @return cutHash Diamond Cut Hash
      */
-    function getDiamondCutHash(
-        FacetCut[] calldata _diamondCut
-    ) public view override returns (bytes32 cutHash) {
+    function getDiamondCutHash(FacetCut[] calldata _diamondCut) public view override returns (bytes32 cutHash) {
         cutHash = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
@@ -297,16 +284,11 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @dev This method fetches the validation period from the security manager
      * @return approvalValidationPeriod Approval validation period of Barz contract fetched from security manager
      */
-    function getApprovalValidationPeriod()
-        internal
-        view
-        returns (uint256 approvalValidationPeriod)
-    {
-        approvalValidationPeriod = securityManager.approvalValidationPeriodOf(
-            address(this)
-        );
-        if (approvalValidationPeriod <= 0)
+    function getApprovalValidationPeriod() internal view returns (uint256 approvalValidationPeriod) {
+        approvalValidationPeriod = securityManager.approvalValidationPeriodOf(address(this));
+        if (approvalValidationPeriod <= 0) {
             revert DiamondCutFacet__InvalidApprovalValidationPeriod();
+        }
     }
 
     /**
@@ -314,12 +296,7 @@ contract DiamondCutFacet is Modifiers, IDiamondCut {
      * @dev This method fetches the nonce from diamond cut storage
      * @return cutNonce Nonce of diamond cut to protect from reply attacks
      */
-    function getDiamondCutNonce()
-        public
-        view
-        override
-        returns (uint128 cutNonce)
-    {
+    function getDiamondCutNonce() public view override returns (uint128 cutNonce) {
         cutNonce = LibFacetStorage.diamondCutStorage().nonce;
     }
 }

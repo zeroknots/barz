@@ -95,18 +95,11 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         uint128 _defaultAdditionSecurityPeriod,
         uint128 _minAdditionSecurityPeriod,
         uint128 _maxAdditionSecurityPeriod
-    )
-        external
-        override
-        onlyOwner
-        initializer(_isAdditionSecurityPeriodInitialized)
-    {
+    ) external override onlyOwner initializer(_isAdditionSecurityPeriodInitialized) {
         _isAdditionSecurityPeriodInitialized = true;
 
         _validatePeriodBoundaries(
-            _defaultAdditionSecurityPeriod,
-            _minAdditionSecurityPeriod,
-            _maxAdditionSecurityPeriod
+            _defaultAdditionSecurityPeriod, _minAdditionSecurityPeriod, _maxAdditionSecurityPeriod
         );
         defaultAdditionSecurityPeriod = _defaultAdditionSecurityPeriod;
         minAdditionSecurityPeriod = _minAdditionSecurityPeriod;
@@ -125,19 +118,10 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         uint128 _defaultRemovalSecurityPeriod,
         uint128 _minRemovalSecurityPeriod,
         uint128 _maxRemovalSecurityPeriod
-    )
-        external
-        override
-        onlyOwner
-        initializer(_isRemovalSecurityPeriodInitialized)
-    {
+    ) external override onlyOwner initializer(_isRemovalSecurityPeriodInitialized) {
         _isRemovalSecurityPeriodInitialized = true;
 
-        _validatePeriodBoundaries(
-            _defaultRemovalSecurityPeriod,
-            _minRemovalSecurityPeriod,
-            _maxRemovalSecurityPeriod
-        );
+        _validatePeriodBoundaries(_defaultRemovalSecurityPeriod, _minRemovalSecurityPeriod, _maxRemovalSecurityPeriod);
         defaultRemovalSecurityPeriod = _defaultRemovalSecurityPeriod;
         minRemovalSecurityPeriod = _minRemovalSecurityPeriod;
         maxRemovalSecurityPeriod = _maxRemovalSecurityPeriod;
@@ -158,11 +142,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
     ) external override onlyOwner initializer(_isSecurityWindowInitialized) {
         _isSecurityWindowInitialized = true;
 
-        _validatePeriodBoundaries(
-            _defaultSecurityWindow,
-            _minSecurityWindow,
-            _maxSecurityWindow
-        );
+        _validatePeriodBoundaries(_defaultSecurityWindow, _minSecurityWindow, _maxSecurityWindow);
         defaultSecurityWindow = _defaultSecurityWindow;
         minSecurityWindow = _minSecurityWindow;
         maxSecurityWindow = _maxSecurityWindow;
@@ -183,11 +163,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
     ) external override onlyOwner initializer(_isRecoveryPeriodInitialized) {
         _isRecoveryPeriodInitialized = true;
 
-        _validatePeriodBoundaries(
-            _defaultRecoveryPeriod,
-            _minRecoveryPeriod,
-            _maxRecoveryPeriod
-        );
+        _validatePeriodBoundaries(_defaultRecoveryPeriod, _minRecoveryPeriod, _maxRecoveryPeriod);
         defaultRecoveryPeriod = _defaultRecoveryPeriod;
         minRecoveryPeriod = _minRecoveryPeriod;
         maxRecoveryPeriod = _maxRecoveryPeriod;
@@ -201,18 +177,15 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _minLockPeriod Minimum Lock Period for all Barz contracts
      * @param _maxLockPeriod Maximum Lock Period for all Barz contracts
      */
-    function initializeLockPeriod(
-        uint128 _defaultLockPeriod,
-        uint128 _minLockPeriod,
-        uint128 _maxLockPeriod
-    ) external override onlyOwner initializer(_isLockPeriodInitialized) {
+    function initializeLockPeriod(uint128 _defaultLockPeriod, uint128 _minLockPeriod, uint128 _maxLockPeriod)
+        external
+        override
+        onlyOwner
+        initializer(_isLockPeriodInitialized)
+    {
         _isLockPeriodInitialized = true;
 
-        _validatePeriodBoundaries(
-            _defaultLockPeriod,
-            _minLockPeriod,
-            _maxLockPeriod
-        );
+        _validatePeriodBoundaries(_defaultLockPeriod, _minLockPeriod, _maxLockPeriod);
         defaultLockPeriod = _defaultLockPeriod;
         minLockPeriod = _minLockPeriod;
         maxLockPeriod = _maxLockPeriod;
@@ -230,18 +203,11 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         uint128 _defaultApprovalValidationPeriod,
         uint128 _minApprovalValidationPeriod,
         uint128 _maxApprovalValidationPeriod
-    )
-        external
-        override
-        onlyOwner
-        initializer(_isApprovalValidationPeriodInitialized)
-    {
+    ) external override onlyOwner initializer(_isApprovalValidationPeriodInitialized) {
         _isApprovalValidationPeriodInitialized = true;
 
         _validatePeriodBoundaries(
-            _defaultApprovalValidationPeriod,
-            _minApprovalValidationPeriod,
-            _maxApprovalValidationPeriod
+            _defaultApprovalValidationPeriod, _minApprovalValidationPeriod, _maxApprovalValidationPeriod
         );
         defaultApprovalValidationPeriod = _defaultApprovalValidationPeriod;
         minApprovalValidationPeriod = _minApprovalValidationPeriod;
@@ -263,11 +229,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
     ) external override onlyOwner initializer(_isMigrationPeriodInitialized) {
         _isMigrationPeriodInitialized = true;
 
-        _validatePeriodBoundaries(
-            _defaultMigrationPeriod,
-            _minMigrationPeriod,
-            _maxMigrationPeriod
-        );
+        _validatePeriodBoundaries(_defaultMigrationPeriod, _minMigrationPeriod, _maxMigrationPeriod);
         defaultMigrationPeriod = _defaultMigrationPeriod;
         minMigrationPeriod = _minMigrationPeriod;
         maxMigrationPeriod = _maxMigrationPeriod;
@@ -279,17 +241,13 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _additionSecurityPeriod Custom Addition Security Period for the wallet
      */
-    function setAdditionSecurityPeriod(
-        address _wallet,
-        uint128 _additionSecurityPeriod
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _additionSecurityPeriod,
-            minAdditionSecurityPeriod,
-            maxAdditionSecurityPeriod
-        );
-        securityConfigs[_wallet]
-            .additionSecurityPeriod = _additionSecurityPeriod;
+    function setAdditionSecurityPeriod(address _wallet, uint128 _additionSecurityPeriod)
+        external
+        override
+        onlyWallet(_wallet)
+    {
+        _validatePeriodBoundaries(_additionSecurityPeriod, minAdditionSecurityPeriod, maxAdditionSecurityPeriod);
+        securityConfigs[_wallet].additionSecurityPeriod = _additionSecurityPeriod;
     }
 
     /**
@@ -298,15 +256,12 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _removalSecurityPeriod Custom Removal Security Period for the wallet
      */
-    function setRemovalSecurityPeriod(
-        address _wallet,
-        uint128 _removalSecurityPeriod
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _removalSecurityPeriod,
-            minRemovalSecurityPeriod,
-            maxRemovalSecurityPeriod
-        );
+    function setRemovalSecurityPeriod(address _wallet, uint128 _removalSecurityPeriod)
+        external
+        override
+        onlyWallet(_wallet)
+    {
+        _validatePeriodBoundaries(_removalSecurityPeriod, minRemovalSecurityPeriod, maxRemovalSecurityPeriod);
         securityConfigs[_wallet].removalSecurityPeriod = _removalSecurityPeriod;
     }
 
@@ -316,15 +271,8 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _securityWindow Custom Security Window for the wallet
      */
-    function setSecurityWindow(
-        address _wallet,
-        uint128 _securityWindow
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _securityWindow,
-            minSecurityWindow,
-            maxSecurityWindow
-        );
+    function setSecurityWindow(address _wallet, uint128 _securityWindow) external override onlyWallet(_wallet) {
+        _validatePeriodBoundaries(_securityWindow, minSecurityWindow, maxSecurityWindow);
         securityConfigs[_wallet].securityWindow = _securityWindow;
     }
 
@@ -334,15 +282,8 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _recoveryPeriod Custom recovery period for the wallet
      */
-    function setRecoveryPeriod(
-        address _wallet,
-        uint128 _recoveryPeriod
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _recoveryPeriod,
-            minRecoveryPeriod,
-            maxRecoveryPeriod
-        );
+    function setRecoveryPeriod(address _wallet, uint128 _recoveryPeriod) external override onlyWallet(_wallet) {
+        _validatePeriodBoundaries(_recoveryPeriod, minRecoveryPeriod, maxRecoveryPeriod);
         securityConfigs[_wallet].recoveryPeriod = _recoveryPeriod;
     }
 
@@ -352,10 +293,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _lockPeriod Custom Lock period for the wallet
      */
-    function setLockPeriod(
-        address _wallet,
-        uint128 _lockPeriod
-    ) external override onlyWallet(_wallet) {
+    function setLockPeriod(address _wallet, uint128 _lockPeriod) external override onlyWallet(_wallet) {
         _validatePeriodBoundaries(_lockPeriod, minLockPeriod, maxLockPeriod);
         securityConfigs[_wallet].lockPeriod = _lockPeriod;
     }
@@ -366,17 +304,13 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _approvalValidationPeriod Custom approval validation period for the wallet
      */
-    function setApprovalValidationPeriod(
-        address _wallet,
-        uint128 _approvalValidationPeriod
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _approvalValidationPeriod,
-            minApprovalValidationPeriod,
-            maxApprovalValidationPeriod
-        );
-        securityConfigs[_wallet]
-            .approvalValidationPeriod = _approvalValidationPeriod;
+    function setApprovalValidationPeriod(address _wallet, uint128 _approvalValidationPeriod)
+        external
+        override
+        onlyWallet(_wallet)
+    {
+        _validatePeriodBoundaries(_approvalValidationPeriod, minApprovalValidationPeriod, maxApprovalValidationPeriod);
+        securityConfigs[_wallet].approvalValidationPeriod = _approvalValidationPeriod;
     }
 
     /**
@@ -385,16 +319,8 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @param _migrationPeriod Custom migration period for the wallet
      */
-
-    function setMigrationPeriod(
-        address _wallet,
-        uint128 _migrationPeriod
-    ) external override onlyWallet(_wallet) {
-        _validatePeriodBoundaries(
-            _migrationPeriod,
-            minMigrationPeriod,
-            maxMigrationPeriod
-        );
+    function setMigrationPeriod(address _wallet, uint128 _migrationPeriod) external override onlyWallet(_wallet) {
+        _validatePeriodBoundaries(_migrationPeriod, minMigrationPeriod, maxMigrationPeriod);
         securityConfigs[_wallet].migrationPeriod = _migrationPeriod;
     }
 
@@ -403,20 +329,15 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return additionSecurityPeriod Addition Security Period of the given Barz account or wallet
      */
-    function additionSecurityPeriodOf(
-        address _wallet
-    )
+    function additionSecurityPeriodOf(address _wallet)
         public
         view
         override
         onlyWallet(_wallet)
         returns (uint128 additionSecurityPeriod)
     {
-        additionSecurityPeriod = securityConfigs[_wallet]
-            .additionSecurityPeriod;
-        additionSecurityPeriod = (additionSecurityPeriod == 0)
-            ? defaultAdditionSecurityPeriod
-            : additionSecurityPeriod;
+        additionSecurityPeriod = securityConfigs[_wallet].additionSecurityPeriod;
+        additionSecurityPeriod = (additionSecurityPeriod == 0) ? defaultAdditionSecurityPeriod : additionSecurityPeriod;
     }
 
     /**
@@ -424,9 +345,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return removalSecurityPeriod Removal Security Period of the given Barz account or wallet
      */
-    function removalSecurityPeriodOf(
-        address _wallet
-    )
+    function removalSecurityPeriodOf(address _wallet)
         public
         view
         override
@@ -434,9 +353,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         returns (uint128 removalSecurityPeriod)
     {
         removalSecurityPeriod = securityConfigs[_wallet].removalSecurityPeriod;
-        removalSecurityPeriod = (removalSecurityPeriod == 0)
-            ? defaultRemovalSecurityPeriod
-            : removalSecurityPeriod;
+        removalSecurityPeriod = (removalSecurityPeriod == 0) ? defaultRemovalSecurityPeriod : removalSecurityPeriod;
     }
 
     /**
@@ -444,9 +361,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return securityWindow Security window of the given Barz account or wallet
      */
-    function securityWindowOf(
-        address _wallet
-    )
+    function securityWindowOf(address _wallet)
         public
         view
         override
@@ -454,9 +369,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         returns (uint128 securityWindow)
     {
         securityWindow = securityConfigs[_wallet].securityWindow;
-        securityWindow = (securityWindow == 0)
-            ? defaultSecurityWindow
-            : securityWindow;
+        securityWindow = (securityWindow == 0) ? defaultSecurityWindow : securityWindow;
     }
 
     /**
@@ -464,9 +377,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return recoveryPeriod Recovery Period of the given Barz account or wallet
      */
-    function recoveryPeriodOf(
-        address _wallet
-    )
+    function recoveryPeriodOf(address _wallet)
         public
         view
         override
@@ -474,9 +385,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         returns (uint128 recoveryPeriod)
     {
         recoveryPeriod = securityConfigs[_wallet].recoveryPeriod;
-        recoveryPeriod = (recoveryPeriod == 0)
-            ? defaultRecoveryPeriod
-            : recoveryPeriod;
+        recoveryPeriod = (recoveryPeriod == 0) ? defaultRecoveryPeriod : recoveryPeriod;
     }
 
     /**
@@ -484,9 +393,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return lockPeriod Lock Period of the given Barz account or wallet
      */
-    function lockPeriodOf(
-        address _wallet
-    ) public view override onlyWallet(_wallet) returns (uint128 lockPeriod) {
+    function lockPeriodOf(address _wallet) public view override onlyWallet(_wallet) returns (uint128 lockPeriod) {
         lockPeriod = securityConfigs[_wallet].lockPeriod;
         lockPeriod = (lockPeriod == 0) ? defaultLockPeriod : lockPeriod;
     }
@@ -496,20 +403,16 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return approvalValidationPeriod Approval Validation Period of the given Barz account or wallet
      */
-    function approvalValidationPeriodOf(
-        address _wallet
-    )
+    function approvalValidationPeriodOf(address _wallet)
         public
         view
         override
         onlyWallet(_wallet)
         returns (uint128 approvalValidationPeriod)
     {
-        approvalValidationPeriod = securityConfigs[_wallet]
-            .approvalValidationPeriod;
-        approvalValidationPeriod = (approvalValidationPeriod == 0)
-            ? defaultApprovalValidationPeriod
-            : approvalValidationPeriod;
+        approvalValidationPeriod = securityConfigs[_wallet].approvalValidationPeriod;
+        approvalValidationPeriod =
+            (approvalValidationPeriod == 0) ? defaultApprovalValidationPeriod : approvalValidationPeriod;
     }
 
     /**
@@ -517,9 +420,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _wallet Address of wallet
      * @return migrationPeriod Migration Period of the given Barz account or wallet
      */
-    function migrationPeriodOf(
-        address _wallet
-    )
+    function migrationPeriodOf(address _wallet)
         public
         view
         override
@@ -527,9 +428,7 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
         returns (uint128 migrationPeriod)
     {
         migrationPeriod = securityConfigs[_wallet].migrationPeriod;
-        migrationPeriod = (migrationPeriod == 0)
-            ? defaultMigrationPeriod
-            : migrationPeriod;
+        migrationPeriod = (migrationPeriod == 0) ? defaultMigrationPeriod : migrationPeriod;
     }
 
     /**
@@ -538,12 +437,9 @@ contract SecurityManager is ISecurityManager, Ownable2Step {
      * @param _minPeriod Minimum period
      * @param _maxPeriod Maximum period
      */
-    function _validatePeriodBoundaries(
-        uint128 _period,
-        uint128 _minPeriod,
-        uint128 _maxPeriod
-    ) internal pure {
-        if (_period >= _maxPeriod || _period <= _minPeriod)
+    function _validatePeriodBoundaries(uint128 _period, uint128 _minPeriod, uint128 _maxPeriod) internal pure {
+        if (_period >= _maxPeriod || _period <= _minPeriod) {
             revert SecurityManager__OutOfBoundary();
+        }
     }
 }

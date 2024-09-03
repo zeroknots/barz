@@ -9,25 +9,12 @@ import {RecoveryConfig} from "../../libraries/LibFacetStorage.sol";
  * @author David Yongjun Kim (@Powerstream3604)
  */
 interface IAccountRecoveryFacet {
-    event RecoveryExecuted(
-        bytes indexed recoveryPublicKey,
-        uint64 executeAfter
-    );
+    event RecoveryExecuted(bytes indexed recoveryPublicKey, uint64 executeAfter);
     event RecoveryFinalized(bytes indexed recoveryPublicKey);
     event RecoveryCanceled(bytes indexed recoveryPublicKey);
-    event RecoveryApproved(
-        bytes indexed recoveryPublicKey,
-        address indexed guardian,
-        uint64 validUntil
-    );
-    event RecoveryApprovalRevoked(
-        bytes indexed recoveryPublicKey,
-        address indexed guardian
-    );
-    event RecoveryCancellationApproved(
-        bytes indexed recoveryPublicKey,
-        address indexed guardian
-    );
+    event RecoveryApproved(bytes indexed recoveryPublicKey, address indexed guardian, uint64 validUntil);
+    event RecoveryApprovalRevoked(bytes indexed recoveryPublicKey, address indexed guardian);
+    event RecoveryCancellationApproved(bytes indexed recoveryPublicKey, address indexed guardian);
     event RecoveryHardstopped();
 
     error AccountRecoveryFacet__CallerNotGuardian();
@@ -51,9 +38,7 @@ interface IAccountRecoveryFacet {
 
     function approveAccountRecovery(bytes calldata recoveryPublicKey) external;
 
-    function revokeAccountRecoveryApproval(
-        bytes calldata recoveryPublicKey
-    ) external;
+    function revokeAccountRecoveryApproval(bytes calldata recoveryPublicKey) external;
 
     function executeRecovery(
         bytes calldata recoveryPublicKey,
@@ -65,29 +50,21 @@ interface IAccountRecoveryFacet {
 
     function approveCancelRecovery(bytes calldata recoveryPublicKey) external;
 
-    function cancelRecovery(
-        bytes calldata recoveryPublicKey,
-        address[] calldata guardians,
-        bytes[] calldata signatures
-    ) external;
+    function cancelRecovery(bytes calldata recoveryPublicKey, address[] calldata guardians, bytes[] calldata signatures)
+        external;
 
     function hardstopRecovery(bytes calldata signature) external;
 
     function validateNewOwner(bytes calldata recoveryPublicKey) external view;
 
-    function getApprovalRecoveryKeyHash(
-        bytes memory recoveryPublicKey,
-        string memory saltString
-    ) external view returns (bytes32);
+    function getApprovalRecoveryKeyHash(bytes memory recoveryPublicKey, string memory saltString)
+        external
+        view
+        returns (bytes32);
 
-    function getRecoveryApprovalCountWithTimeValidity(
-        bytes32 recoveryPublicKeyHash
-    ) external view returns (uint256);
+    function getRecoveryApprovalCountWithTimeValidity(bytes32 recoveryPublicKeyHash) external view returns (uint256);
 
-    function isRecoveryApproved(
-        bytes32 recoveryPublicKeyHash,
-        address approver
-    ) external view returns (bool);
+    function isRecoveryApproved(bytes32 recoveryPublicKeyHash, address approver) external view returns (bool);
 
     function getRecoveryNonce() external view returns (uint128);
 

@@ -28,8 +28,8 @@ interface IVerificationFacet {
 
     function isValidKeyType(bytes calldata) external view returns (bool);
 
-    function validateOwnerSignature(
-        UserOperation calldata userOp,
-        bytes32 userOpHash
-    ) external view returns (uint256);
+    function validateOwnerSignature(UserOperation calldata userOp, bytes32 userOpHash)
+        external
+        view
+        returns (uint256);
 }

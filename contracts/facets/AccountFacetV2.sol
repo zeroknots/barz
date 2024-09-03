@@ -68,9 +68,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         LibAppStorage.enforceAccountInitialize();
         s.entryPoint = IEntryPoint(_anEntryPoint);
         s.facetRegistry = IFacetRegistry(_facetRegistry);
-        LibDiamond.diamondStorage().defaultFallbackHandler = IDiamondLoupe(
-            _defaultFallBackHandler
-        );
+        LibDiamond.diamondStorage().defaultFallbackHandler = IDiamondLoupe(_defaultFallBackHandler);
 
         _cutDiamondAccountFacet(_verificationFacet);
 
@@ -80,9 +78,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         );
         // Every Verification Facet should comply with initializeSigner(bytes)
         // to be compatible with the Barz contract(for initialization)
-        (bool success, bytes memory result) = _verificationFacet.delegatecall(
-            initCall
-        );
+        (bool success, bytes memory result) = _verificationFacet.delegatecall(initCall);
         if (!success || uint256(bytes32(result)) != 1) {
             revert AccountFacetV2__InitializationFailure();
         }
@@ -94,9 +90,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
     function _cutDiamondAccountFacet(address _verificationFacet) internal {
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
 
-        bytes4 ownerVerificationFuncSelector = IVerificationFacet(
-            _verificationFacet
-        ).validateOwnerSignatureSelector();
+        bytes4 ownerVerificationFuncSelector = IVerificationFacet(_verificationFacet).validateOwnerSignatureSelector();
 
         bytes4[] memory verificationFunctionSelectors = new bytes4[](3);
         verificationFunctionSelectors[0] = IERC1271.isValidSignature.selector;
@@ -119,11 +113,12 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _value Amount of native coin the owner is willing to send(e.g. ETH, BNB)
      * @param _func Bytes of calldata to execute in the destination address
      */
-    function executeSingle(
-        address _dest,
-        uint256 _value,
-        bytes calldata _func
-    ) external override onlyEntryPoint onlyWhenUnlocked {
+    function executeSingle(address _dest, uint256 _value, bytes calldata _func)
+        external
+        override
+        onlyEntryPoint
+        onlyWhenUnlocked
+    {
         LibFacetGuard.enforceFacetValidation();
         address restrictionsFacet = LibDiamond.restrictionsFacet();
         if (restrictionsFacet == address(0)) {
@@ -142,31 +137,27 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _value Array of amount of native coin the owner is willing to send(e.g. ETH, BNB)
      * @param _func Array of bytes of calldata to execute in the destination address
      */
-    function executeBatch(
-        address[] calldata _dest,
-        uint256[] calldata _value,
-        bytes[] calldata _func
-    ) external override onlyEntryPoint onlyWhenUnlocked {
+    function executeBatch(address[] calldata _dest, uint256[] calldata _value, bytes[] calldata _func)
+        external
+        override
+        onlyEntryPoint
+        onlyWhenUnlocked
+    {
         LibFacetGuard.enforceFacetValidation();
         if (_dest.length != _func.length || _dest.length != _value.length) {
             revert AccountFacetV2__InvalidArrayLength();
         }
         address restrictionsFacet = LibDiamond.restrictionsFacet();
         if (restrictionsFacet == address(0)) {
-            for (uint256 i; i < _dest.length; ) {
+            for (uint256 i; i < _dest.length;) {
                 _call(_dest[i], _value[i], _func[i]);
                 unchecked {
                     ++i;
                 }
             }
         } else {
-            for (uint256 i; i < _dest.length; ) {
-                _callWithRestrictions(
-                    _dest[i],
-                    _value[i],
-                    _func[i],
-                    restrictionsFacet
-                );
+            for (uint256 i; i < _dest.length;) {
+                _callWithRestrictions(_dest[i], _value[i], _func[i], restrictionsFacet);
                 unchecked {
                     ++i;
                 }
@@ -182,11 +173,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _userOp UserOperation from owner to be validated
      * @param _userOpHash Hash of UserOperation given from the EntryPoint contract
      */
-    function validateUserOp(
-        UserOperation calldata _userOp,
-        bytes32 _userOpHash,
-        uint256 _missingAccountFunds
-    )
+    function validateUserOp(UserOperation calldata _userOp, bytes32 _userOpHash, uint256 _missingAccountFunds)
         external
         virtual
         override
@@ -201,39 +188,27 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         validatorKey = _extractValidatorSystem(_userOp);
         if (validatorKey != bytes2(0)) {
             // Make function call to ValidatorSystem. e.g., 6900, 7579, etc
-            validateCall = abi.encodeWithSelector(
-                this.validateUserOp.selector,
-                _userOp,
-                _userOpHash,
-                _missingAccountFunds
-            );
-            validatorSystem = LibValidationModuleFacetStorage
-                .validationModuleFacetStorage()
-                .validationModuleFacet[_extractValidatorSystem(_userOp)];
+            validateCall =
+                abi.encodeWithSelector(this.validateUserOp.selector, _userOp, _userOpHash, _missingAccountFunds);
+            validatorSystem = LibValidationModuleFacetStorage.validationModuleFacetStorage().validationModuleFacet[_extractValidatorSystem(
+                _userOp
+            )];
             if (validatorSystem == address(0)) {
                 revert AccountFacetV2__NonExistentValidatorSystem();
             }
         } else {
             // Get Facet with Function Selector
-            validatorSystem = LibLoupe.facetAddress(
-                s.validateOwnerSignatureSelector
-            );
+            validatorSystem = LibLoupe.facetAddress(s.validateOwnerSignatureSelector);
             if (validatorSystem == address(0)) {
                 revert AccountFacetV2__NonExistentVerificationFacet();
             }
 
             // Make function call to VerificationFacet
-            validateCall = abi.encodeWithSelector(
-                s.validateOwnerSignatureSelector,
-                _userOp,
-                _userOpHash
-            );
+            validateCall = abi.encodeWithSelector(s.validateOwnerSignatureSelector, _userOp, _userOpHash);
             facetCall = 1;
         }
 
-        (bool success, bytes memory result) = validatorSystem.delegatecall(
-            validateCall
-        );
+        (bool success, bytes memory result) = validatorSystem.delegatecall(validateCall);
         if (!success) {
             revert AccountFacetV2__CallNotSuccessful();
         }
@@ -251,25 +226,12 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         // TODO: Update this
         assembly {
             if _missingAccountFunds {
-                pop(
-                    call(
-                        gas(),
-                        caller(),
-                        _missingAccountFunds,
-                        callvalue(),
-                        callvalue(),
-                        callvalue(),
-                        callvalue()
-                    )
-                )
+                pop(call(gas(), caller(), _missingAccountFunds, callvalue(), callvalue(), callvalue(), callvalue()))
             }
         }
     }
 
-    function addValidatorSystem(
-        bytes2 _systemKey,
-        address _system
-    ) external override onlyWhenUnlocked {
+    function addValidatorSystem(bytes2 _systemKey, address _system) external override onlyWhenUnlocked {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
@@ -281,9 +243,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         emit ValidatorSystemAdded(_systemKey, _system);
     }
 
-    function removeValidatorSystem(
-        bytes2 _systemKey
-    ) external override onlyWhenUnlocked {
+    function removeValidatorSystem(bytes2 _systemKey) external override onlyWhenUnlocked {
         LibDiamond.enforceIsSelf();
         LibFacetGuard.enforceFacetValidation();
 
@@ -295,17 +255,11 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
         emit ValidatorSystemRemoved(_systemKey);
     }
 
-    function getValidatorSystem(
-        bytes2 _systemKey
-    ) public view returns (address system) {
-        system = LibValidationModuleFacetStorage
-            .validationModuleFacetStorage()
-            .validationModuleFacet[_systemKey];
+    function getValidatorSystem(bytes2 _systemKey) public view returns (address system) {
+        system = LibValidationModuleFacetStorage.validationModuleFacetStorage().validationModuleFacet[_systemKey];
     }
 
-    function nonce(
-        uint192 key
-    ) external view virtual override returns (uint256) {
+    function nonce(uint192 key) external view virtual override returns (uint256) {
         return IEntryPoint(entryPoint()).getNonce(address(this), key);
     }
 
@@ -316,14 +270,8 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _value Amount of Native coin the owner is wanting to make in this call
      * @param _data Calldata the owner is forwarding together in the call e.g. Swap/Token Transfer
      */
-    function _call(
-        address _target,
-        uint256 _value,
-        bytes memory _data
-    ) internal {
-        (bool success, bytes memory result) = _target.call{value: _value}(
-            _data
-        );
+    function _call(address _target, uint256 _value, bytes memory _data) internal {
+        (bool success, bytes memory result) = _target.call{value: _value}(_data);
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))
@@ -339,22 +287,15 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _data Calldata the owner is forwarding together in the call e.g. Swap/Token Transfer
      * @param _restrictionsFacet Address of Facet to validate restrictions
      */
-    function _callWithRestrictions(
-        address _target,
-        uint256 _value,
-        bytes memory _data,
-        address _restrictionsFacet
-    ) internal {
+    function _callWithRestrictions(address _target, uint256 _value, bytes memory _data, address _restrictionsFacet)
+        internal
+    {
         // NOTE: No restrictions facet, so restriction validation passes
-        if (
-            _checkRestrictions(_restrictionsFacet, _target, _value, _data) != 0
-        ) {
+        if (_checkRestrictions(_restrictionsFacet, _target, _value, _data) != 0) {
             revert AccountFacetV2__RestrictionsFailure();
         }
 
-        (bool success, bytes memory result) = _target.call{value: _value}(
-            _data
-        );
+        (bool success, bytes memory result) = _target.call{value: _value}(_data);
         if (!success) {
             assembly {
                 revert(add(result, 32), mload(result))
@@ -370,12 +311,10 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
      * @param _value Amount of native coin the call is sending together with the call
      * @param _data Calldata to trigger execution in target address
      */
-    function _checkRestrictions(
-        address _facet,
-        address _target,
-        uint256 _value,
-        bytes memory _data
-    ) internal returns (uint256 result) {
+    function _checkRestrictions(address _facet, address _target, uint256 _value, bytes memory _data)
+        internal
+        returns (uint256 result)
+    {
         bytes memory call = abi.encodeWithSelector(
             0xac87185d, // verifyRestrictions(address,address,uint256,bytes)
             address(this),
@@ -394,9 +333,7 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
     // 20 bytes - validator address
     // 20-24 bytes - validator system
     // 8 bytes - scalar value
-    function _extractValidatorSystem(
-        UserOperation calldata _userOp
-    ) internal pure returns (bytes2) {
+    function _extractValidatorSystem(UserOperation calldata _userOp) internal pure returns (bytes2) {
         bytes2 validatorSystem;
         uint256 _nonce = _userOp.nonce;
         assembly {
@@ -406,8 +343,6 @@ contract AccountFacetV2 is IAccountFacetV2, IAccount, BarzStorage {
     }
 
     function _setValidatorSystem(bytes2 _systemKey, address _system) internal {
-        LibValidationModuleFacetStorage
-            .validationModuleFacetStorage()
-            .validationModuleFacet[_systemKey] = _system;
+        LibValidationModuleFacetStorage.validationModuleFacetStorage().validationModuleFacet[_systemKey] = _system;
     }
 }

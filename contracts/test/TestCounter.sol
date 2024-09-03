@@ -2,10 +2,10 @@
 pragma solidity 0.8.26;
 
 contract TestCounter {
-    int private count = 0;
+    int256 private count = 0;
 
-    event CounterIncremented(int count);
-    event CounterDecremented(int count);
+    event CounterIncremented(int256 count);
+    event CounterDecremented(int256 count);
 
     function incrementCounter() public {
         count += 1;
@@ -17,7 +17,7 @@ contract TestCounter {
         emit CounterIncremented(count);
     }
 
-    function getCount() public view returns (int) {
+    function getCount() public view returns (int256) {
         return count;
     }
 

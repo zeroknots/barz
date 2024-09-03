@@ -31,8 +31,9 @@ abstract contract Modifiers is BarzStorage {
      * @notice Modifier to only allow guardian or owner to make a call, reverts if any other entity is the caller
      */
     modifier onlyGuardianOrOwner() {
-        if (!LibGuardian.isGuardian(msg.sender) && address(this) != msg.sender)
+        if (!LibGuardian.isGuardian(msg.sender) && address(this) != msg.sender) {
             revert CallerNotGuardianOrOwner();
+        }
         _;
     }
 
@@ -41,13 +42,11 @@ abstract contract Modifiers is BarzStorage {
      * @dev This method loops through the array and checks if a duplicate address exists, it reverts if duplicate address exists
      * @param approvers Array of address
      */
-    function _checkApprover(
-        address[] memory approvers
-    ) internal pure returns (bool) {
+    function _checkApprover(address[] memory approvers) internal pure returns (bool) {
         uint256 approverLength = approvers.length;
         if (0 == approverLength) revert ZeroApproverLength();
-        for (uint256 i; i < approverLength - 1; ) {
-            for (uint256 j = i + 1; j < approverLength; ) {
+        for (uint256 i; i < approverLength - 1;) {
+            for (uint256 j = i + 1; j < approverLength;) {
                 if (approvers[i] == approvers[j]) {
                     revert DuplicateApprover(); // Found a duplicate
                 }
@@ -67,19 +66,16 @@ abstract contract Modifiers is BarzStorage {
      * @dev This method loops through the cut and checks if the facet getting added/replaced is registered to facet registry
      * @param _diamondCut Array of FacetCut, data for diamondCut defined in EIP-2535
      */
-    function _checkFacetCutValidity(
-        IDiamondCut.FacetCut[] memory _diamondCut
-    ) internal view {
+    function _checkFacetCutValidity(IDiamondCut.FacetCut[] memory _diamondCut) internal view {
         uint256 diamondCutLength = _diamondCut.length;
-        for (uint256 i; i < diamondCutLength; ) {
+        for (uint256 i; i < diamondCutLength;) {
             if (
-                _diamondCut[i].action == IDiamondCut.FacetCutAction.Add ||
-                _diamondCut[i].action == IDiamondCut.FacetCutAction.Replace
+                _diamondCut[i].action == IDiamondCut.FacetCutAction.Add
+                    || _diamondCut[i].action == IDiamondCut.FacetCutAction.Replace
             ) {
                 if (
                     !s.facetRegistry.areFacetFunctionSelectorsRegistered(
-                        _diamondCut[i].facetAddress,
-                        _diamondCut[i].functionSelectors
+                        _diamondCut[i].facetAddress, _diamondCut[i].functionSelectors
                     )
                 ) revert UnregisteredFacetAndSelectors();
             }
